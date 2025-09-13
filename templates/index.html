@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>IDA Tech Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-blue-600 text-white p-4">
+      <div class="flex justify-between items-center">
+        <h1 class="text-xl font-bold">IDA Tech Management</h1>
+        <button
+          id="profile-btn"
+          class="bg-blue-700 px-4 py-2 rounded hover:bg-blue-800"
+        >
+          <i class="fas fa-user mr-2"></i>Profile
+        </button>
+      </div>
+    </nav>
+
+    <!-- Sidebar and Main Content -->
+    <div class="flex">
+      <aside class="w-64 bg-white shadow-md min-h-screen">
+        <nav class="p-4">
+          <ul class="space-y-2">
+            <li>
+              <button
+                class="nav-btn w-full text-left px-4 py-2 rounded hover:bg-blue-50 text-blue-600 bg-blue-50"
+                data-section="overview"
+              >
+                <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-btn w-full text-left px-4 py-2 rounded hover:bg-blue-50"
+                data-section="students"
+              >
+                <i class="fas fa-graduation-cap mr-3"></i>Students
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-btn w-full text-left px-4 py-2 rounded hover:bg-blue-50"
+                data-section="employees"
+              >
+                <i class="fas fa-users mr-3"></i>Employees
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-btn w-full text-left px-4 py-2 rounded hover:bg-blue-50"
+                data-section="financial"
+              >
+                <i class="fas fa-dollar-sign mr-3"></i>Financial
+              </button>
+            </li>
+            <li>
+              <button
+                class="nav-btn w-full text-left px-4 py-2 rounded hover:bg-blue-50"
+                data-section="reports"
+              >
+                <i class="fas fa-chart-bar mr-3"></i>Reports
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="flex-1 p-6">
+        <!-- Dashboard Overview -->
+        <section id="overview" class="section">
+          <h2 class="text-2xl font-bold mb-6">Dashboard Overview</h2>
+
+          <div
+            class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          >
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center">
+                <div class="p-3 bg-blue-100 rounded-full">
+                  <i class="fas fa-graduation-cap text-blue-600"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-semibold">Total Students</h3>
+                  <p
+                    class="text-2xl font-bold text-blue-600"
+                    id="total-students"
+                  >
+                    0
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center">
+                <div class="p-3 bg-green-100 rounded-full">
+                  <i class="fas fa-users text-green-600"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-semibold">Employees</h3>
+                  <p
+                    class="text-2xl font-bold text-green-600"
+                    id="total-employees"
+                  >
+                    0
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center">
+                <div class="p-3 bg-yellow-100 rounded-full">
+                  <i class="fas fa-microchip text-yellow-600"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-semibold">IoT Students</h3>
+                  <p
+                    class="text-2xl font-bold text-yellow-600"
+                    id="iot-students"
+                  >
+                    0
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow">
+              <div class="flex items-center">
+                <div class="p-3 bg-purple-100 rounded-full">
+                  <i class="fas fa-code text-purple-600"></i>
+                </div>
+                <div class="ml-4">
+                  <h3 class="text-lg font-semibold">SoD Students</h3>
+                  <p
+                    class="text-2xl font-bold text-purple-600"
+                    id="sod-students"
+                  >
+                    0
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
+            <div class="space-y-3" id="recent-activities">
+              <div class="flex items-center p-3 bg-gray-50 rounded">
+                <i class="fas fa-plus-circle text-green-500 mr-3"></i>
+                <span>New trainee John Doe added to IoT program</span>
+              </div>
+              <div class="flex items-center p-3 bg-gray-50 rounded">
+                <i class="fas fa-dollar-sign text-blue-500 mr-3"></i>
+                <span>Monthly salaries processed</span>
+              </div>
+              <div class="flex items-center p-3 bg-gray-50 rounded">
+                <i class="fas fa-chart-line text-purple-500 mr-3"></i>
+                <span>Financial report generated</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Students Section -->
+        <section id="students" class="section hidden">
+          <h2 class="text-2xl font-bold mb-6">Student Management</h2>
+
+          <div class="mb-6 flex justify-between items-center">
+            <div class="flex space-x-4">
+              <button
+                class="filter-btn bg-blue-500 text-white px-4 py-2 rounded"
+                data-filter="all"
+              >
+                All Students
+              </button>
+              <button
+                class="filter-btn bg-gray-200 px-4 py-2 rounded"
+                data-filter="trainees"
+              >
+                Trainees
+              </button>
+              <button
+                class="filter-btn bg-gray-200 px-4 py-2 rounded"
+                data-filter="internees"
+              >
+                Internees
+              </button>
+              <button
+                class="filter-btn bg-gray-200 px-4 py-2 rounded"
+                data-filter="iot"
+              >
+                IoT
+              </button>
+              <button
+                class="filter-btn bg-gray-200 px-4 py-2 rounded"
+                data-filter="sod"
+              >
+                SoD
+              </button>
+            </div>
+            <button
+              id="add-student-btn"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              <i class="fas fa-plus mr-2"></i>Add Student
+            </button>
+          </div>
+
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Name
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Type
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Category
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Program
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Level
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="students-table"
+                class="divide-y divide-gray-200"
+              ></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Employees Section -->
+        <section id="employees" class="section hidden">
+          <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
+
+          <div class="mb-6 flex justify-between items-center">
+            <div class="flex space-x-4">
+              <input
+                type="text"
+                id="employee-search"
+                placeholder="Search employees..."
+                class="px-4 py-2 border rounded-lg"
+              />
+            </div>
+            <button
+              id="add-employee-btn"
+              class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+            >
+              <i class="fas fa-plus mr-2"></i>Add Employee
+            </button>
+          </div>
+
+          <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="w-full">
+              <thead class="bg-gray-50">
+                <tr>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Name
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Position
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Department
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Salary
+                  </th>
+                  <th
+                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                  >
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody
+                id="employees-table"
+                class="divide-y divide-gray-200"
+              ></tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Financial Section -->
+        <section id="financial" class="section hidden">
+          <h2 class="text-2xl font-bold mb-6">Financial Management</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold mb-4">Monthly Summary</h3>
+              <div class="space-y-4">
+                <div class="flex justify-between">
+                  <span>Total Salaries:</span>
+                  <span class="font-bold text-red-600" id="total-salaries"
+                    >$0</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span>Transport Expenses:</span>
+                  <span class="font-bold text-red-600" id="transport-expenses"
+                    >$0</span
+                  >
+                </div>
+                <div class="flex justify-between">
+                  <span>Other Expenses:</span>
+                  <span class="font-bold text-red-600" id="other-expenses"
+                    >$0</span
+                  >
+                </div>
+                <hr />
+                <div class="flex justify-between text-lg font-bold">
+                  <span>Total Expenses:</span>
+                  <span class="text-red-600" id="total-expenses">$0</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+              <h3 class="text-lg font-semibold mb-4">Add Expense</h3>
+              <form id="expense-form">
+                <div class="mb-4">
+                  <label class="block text-sm font-medium mb-2">Type</label>
+                  <select
+                    id="expense-type"
+                    class="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="salary">Salary</option>
+                    <option value="transport">Transport</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium mb-2"
+                    >Description</label
+                  >
+                  <input
+                    type="text"
+                    id="expense-description"
+                    class="w-full px-3 py-2 border rounded-lg"
+                    required
+                  />
+                </div>
+                <div class="mb-4">
+                  <label class="block text-sm font-medium mb-2">Amount</label>
+                  <input
+                    type="number"
+                    id="expense-amount"
+                    class="w-full px-3 py-2 border rounded-lg"
+                    required
+                  />
+                </div>
+                <button
+                  type="submit"
+                  class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
+                >
+                  Add Expense
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b">
+              <h3 class="text-lg font-semibold">Recent Transactions</h3>
+            </div>
+            <div class="p-6">
+              <table class="w-full">
+                <thead>
+                  <tr class="border-b">
+                    <th class="text-left py-2">Date</th>
+                    <th class="text-left py-2">Type</th>
+                    <th class="text-left py-2">Description</th>
+                    <th class="text-right py-2">Amount</th>
+                  </tr>
+                </thead>
+                <tbody id="transactions-table"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="reports" class="section hidden">
+          <h2 class="text-2xl font-bold mb-6">Reports</h2>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+            <button
+              class="report-btn bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600"
+              data-report="students"
+            >
+              <i class="fas fa-graduation-cap text-2xl mb-2"></i>
+              <h3 class="font-semibold">Students Report</h3>
+            </button>
+            <button
+              class="report-btn bg-green-500 text-white p-6 rounded-lg hover:bg-green-600"
+              data-report="employees"
+            >
+              <i class="fas fa-users text-2xl mb-2"></i>
+              <h3 class="font-semibold">Employees Report</h3>
+            </button>
+            <button
+              class="report-btn bg-purple-500 text-white p-6 rounded-lg hover:bg-purple-600"
+              data-report="financial"
+            >
+              <i class="fas fa-chart-line text-2xl mb-2"></i>
+              <h3 class="font-semibold">Financial Report</h3>
+            </button>
+          </div>
+
+          <div id="report-content" class="bg-white rounded-lg shadow p-6">
+            <p class="text-gray-500 text-center">
+              Select a report type above to generate a report
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Student Modal -->
+    <div
+      id="student-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+    >
+      <div class="bg-white rounded-lg p-6 w-96">
+        <h3 class="text-lg font-semibold mb-4">Add Student</h3>
+        <form id="student-form">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Name</label>
+            <input
+              type="text"
+              id="student-name"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Type</label>
+            <select
+              id="student-type"
+              class="w-full px-3 py-2 border rounded-lg"
+            >
+              <option value="trainee">Trainee</option>
+              <option value="internee-university">Internee (University)</option>
+              <option value="internee-highschool">
+                Internee (High School)
+              </option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Program</label>
+            <select
+              id="student-program"
+              class="w-full px-3 py-2 border rounded-lg"
+            >
+              <option value="iot">IoT</option>
+              <option value="sod">SoD</option>
+            </select>
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Level</label>
+            <input
+              type="text"
+              id="student-level"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              id="cancel-student"
+              class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Add Student
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Add Employee Modal -->
+    <div
+      id="employee-modal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+    >
+      <div class="bg-white rounded-lg p-6 w-96">
+        <h3 class="text-lg font-semibold mb-4">Add Employee</h3>
+        <form id="employee-form">
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Name</label>
+            <input
+              type="text"
+              id="employee-name"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Position</label>
+            <input
+              type="text"
+              id="employee-position"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Department</label>
+            <input
+              type="text"
+              id="employee-department"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2">Salary</label>
+            <input
+              type="number"
+              id="employee-salary"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              id="cancel-employee"
+              class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Add Employee
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+    </div>
+  </body>
+</html>
