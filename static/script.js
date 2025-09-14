@@ -1,14 +1,41 @@
 document.addEventListener("DOMContentLoaded", function () {
   // Navigation button handling
   const navButtons = document.querySelectorAll(".nav-btn");
+
+  // Restore active section from localStorage
+  const savedSection = localStorage.getItem("activeSection");
+  if (savedSection) {
+    const sectionToShow = document.getElementById(savedSection);
+    if (sectionToShow) {
+      // Hide all sections
+      document.querySelectorAll(".section").forEach((section) => {
+        section.classList.add("hidden");
+      });
+      sectionToShow.classList.remove("hidden");
+
+      // Update nav button styles
+      navButtons.forEach((b) => {
+        b.classList.remove("bg-primaryBlue-light", "text-primaryBlue");
+        b.classList.add("hover:bg-primaryBlue-light");
+      });
+      const activeBtn = document.querySelector(
+        `.nav-btn[data-section="${savedSection}"]`
+      );
+      if (activeBtn) {
+        activeBtn.classList.add("bg-primaryBlue-light", "text-primaryBlue");
+        activeBtn.classList.remove("hover:bg-primaryBlue-light");
+      }
+    }
+  }
+
   navButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       navButtons.forEach((b) => {
-        b.classList.remove("bg-blue-50", "text-blue-600");
-        b.classList.add("hover:bg-blue-50");
+        b.classList.remove("bg-primaryBlue-light", "text-primaryBlue");
+        b.classList.add("hover:bg-primaryBlue-light");
       });
-      btn.classList.add("bg-blue-50", "text-blue-600");
-      btn.classList.remove("hover:bg-blue-50");
+      btn.classList.add("bg-primaryBlue-light", "text-primaryBlue");
+      btn.classList.remove("hover:bg-primaryBlue-light");
 
       document.querySelectorAll(".section").forEach((section) => {
         section.classList.add("hidden");
@@ -18,6 +45,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (sectionToShow) {
         sectionToShow.classList.remove("hidden");
       }
+
+      // Save active section to localStorage
+      localStorage.setItem("activeSection", sectionId);
     });
   });
 
@@ -314,11 +344,11 @@ document.addEventListener("DOMContentLoaded", function () {
   filterButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       filterButtons.forEach((b) => {
-        b.classList.remove("bg-blue-500", "text-white");
-        b.classList.add("bg-gray-200");
+        b.classList.remove("bg-primaryBlue", "text-white");
+        b.classList.add("bg-coolGray");
       });
-      btn.classList.add("bg-blue-500", "text-white");
-      btn.classList.remove("bg-gray-200");
+      btn.classList.add("bg-primaryBlue", "text-white");
+      btn.classList.remove("bg-coolGray");
 
       currentFilter = btn.getAttribute("data-filter");
       applyFilters();
@@ -507,6 +537,45 @@ document.addEventListener("DOMContentLoaded", function () {
     return cookieValue;
   }
 
-  // Intercept Edit Employee links
-  // Removed duplicate event listener block to avoid conflicts
+  // Sidebar toggle functionality
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  const sidebar = document.getElementById("sidebar");
+  const mainContent = document.getElementById("main-content");
+
+  if (sidebarToggle && sidebar && mainContent) {
+    // Restore sidebar state from localStorage
+    const sidebarCollapsed =
+      localStorage.getItem("sidebarCollapsed") === "true";
+    if (sidebarCollapsed) {
+      sidebar.classList.add("collapsed");
+      mainContent.classList.add("collapsed");
+    }
+
+    sidebarToggle.addEventListener("click", () => {
+      sidebar.classList.toggle("collapsed");
+      mainContent.classList.toggle("collapsed");
+
+      // Toggle collapsed class on nav for margin adjustment
+      const nav = document.querySelector("nav");
+      if (nav) {
+        nav.classList.toggle("collapsed");
+      }
+
+      // Save state to localStorage
+      const isCollapsed = sidebar.classList.contains("collapsed");
+      localStorage.setItem("sidebarCollapsed", isCollapsed);
+    });
+
+    // On page load, also toggle nav collapsed class based on localStorage
+    const nav = document.querySelector("nav");
+    if (nav) {
+      const sidebarCollapsed =
+        localStorage.getItem("sidebarCollapsed") === "true";
+      if (sidebarCollapsed) {
+        nav.classList.add("collapsed");
+      } else {
+        nav.classList.remove("collapsed");
+      }
+    }
+  }
 });
