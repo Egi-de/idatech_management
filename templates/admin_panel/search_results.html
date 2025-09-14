@@ -1,0 +1,94 @@
+{% extends "admin_panel/base.html" %} {% block content %}
+<h2 class="text-2xl font-bold mb-6">Search Results for "{{ query }}"</h2>
+
+{% if not query %}
+<p>Please enter a search query.</p>
+{% else %} {% if students %}
+<div class="mb-6">
+  <h3 class="text-xl font-semibold mb-2">Students</h3>
+  <table class="w-full table-auto border-collapse border border-gray-300">
+    <thead>
+      <tr>
+        <th class="border border-gray-300 px-4 py-2">Name</th>
+        <th class="border border-gray-300 px-4 py-2">Type</th>
+        <th class="border border-gray-300 px-4 py-2">Category</th>
+        <th class="border border-gray-300 px-4 py-2">Program</th>
+        <th class="border border-gray-300 px-4 py-2">Level</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for student in students %}
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">{{ student.name }}</td>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ student.get_type_display }}
+        </td>
+        <td class="border border-gray-300 px-4 py-2">{{ student.category }}</td>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ student.get_program_display }}
+        </td>
+        <td class="border border-gray-300 px-4 py-2">{{ student.level }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No students found.</p>
+{% endif %} {% if employees %}
+<div class="mb-6">
+  <h3 class="text-xl font-semibold mb-2">Employees</h3>
+  <table class="w-full table-auto border-collapse border border-gray-300">
+    <thead>
+      <tr>
+        <th class="border border-gray-300 px-4 py-2">Name</th>
+        <th class="border border-gray-300 px-4 py-2">Position</th>
+        <th class="border border-gray-300 px-4 py-2">Department</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for employee in employees %}
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">{{ employee.name }}</td>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ employee.position }}
+        </td>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ employee.department }}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No employees found.</p>
+{% endif %} {% if expenses %}
+<div class="mb-6">
+  <h3 class="text-xl font-semibold mb-2">Expenses</h3>
+  <table class="w-full table-auto border-collapse border border-gray-300">
+    <thead>
+      <tr>
+        <th class="border border-gray-300 px-4 py-2">Type</th>
+        <th class="border border-gray-300 px-4 py-2">Description</th>
+        <th class="border border-gray-300 px-4 py-2">Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for expense in expenses %}
+      <tr>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ expense.get_type_display }}
+        </td>
+        <td class="border border-gray-300 px-4 py-2">
+          {{ expense.description }}
+        </td>
+        <td class="border border-gray-300 px-4 py-2">${{ expense.amount }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<p>No expenses found.</p>
+{% endif %} {% endif %} {% endblock %}

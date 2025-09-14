@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from .models import Student, Employee, Expense, Transaction, RecentActivity
 from django.contrib.auth.decorators import login_required
+from user_auth.models import Profile
 
 @login_required
 def dashboard(request):
@@ -31,6 +32,9 @@ def dashboard(request):
     employees = Employee.objects.all()
     expenses = Expense.objects.all()
 
+    # Get or create profile for logged-in user
+    profile, created = Profile.objects.get_or_create(user=request.user)
+
     context = {
         'total_students': total_students,
         'total_employees': total_employees,
@@ -45,6 +49,7 @@ def dashboard(request):
         'students': students,
         'employees': employees,
         'expenses': expenses,
+        'profile': profile,
     }
     return render(request, 'admin_panel/index.html', context)
 
@@ -373,3 +378,39 @@ def fetch_tab_data(request, tab_name):
         data = []
 
     return JsonResponse({'data': list(data)})
+
+from django.db.models import Q
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def search(request):
+    query = request.GET.get('q', '').strip()
+    students = []
+    employees = []
+    expenses = []
+
+    if query:
+        students = Student.objects.filter(
+            Q(name__icontains=query) |
+            Q(type__icontains=query) |
+            Q(category__icontains=query) |
+            Q(program__icontains=query) |
+            Q(level__icontains=query)
+        )
+        employees = Employee.objects.filter(
+            Q(name__icontains=query) |
+            Q(position__icontains=query) |
+            Q(department__icontains=query)
+        )
+        expenses = Expense.objects.filter(
+            Q(description__icontains=query) |
+            Q(type__icontains=query)
+        )
+
+    context = {
+        'query': query,
+        'students': students,
+        'employees': employees,
+        'expenses': expenses,
+    }
+    return render(request, 'admin_panel/search_results.html', context)
