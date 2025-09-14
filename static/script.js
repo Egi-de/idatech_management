@@ -2,10 +2,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Navigation button handling
   const navButtons = document.querySelectorAll(".nav-btn");
 
-  // Restore active section from localStorage
-  const savedSection = localStorage.getItem("activeSection");
-  if (savedSection) {
-    const sectionToShow = document.getElementById(savedSection);
+  // Restore active section from localStorage or URL param
+  const urlParams = new URLSearchParams(window.location.search);
+  const sectionParam = urlParams.get("section");
+  let activeSection = sectionParam || localStorage.getItem("activeSection");
+  if (activeSection) {
+    const sectionToShow = document.getElementById(activeSection);
     if (sectionToShow) {
       // Hide all sections
       document.querySelectorAll(".section").forEach((section) => {
@@ -19,16 +21,23 @@ document.addEventListener("DOMContentLoaded", function () {
         b.classList.add("hover:bg-primaryBlue-light");
       });
       const activeBtn = document.querySelector(
-        `.nav-btn[data-section="${savedSection}"]`
+        `.nav-btn[data-section="${activeSection}"]`
       );
       if (activeBtn) {
         activeBtn.classList.add("bg-primaryBlue-light", "text-primaryBlue");
         activeBtn.classList.remove("hover:bg-primaryBlue-light");
       }
     }
+    // Update localStorage if from URL
+    if (sectionParam) {
+      localStorage.setItem("activeSection", activeSection);
+    }
   }
 
   navButtons.forEach((btn) => {
+    // Skip adding click handler to <a> elements, as they handle navigation via href
+    if (btn.tagName.toLowerCase() === "a") return;
+
     btn.addEventListener("click", () => {
       navButtons.forEach((b) => {
         b.classList.remove("bg-primaryBlue-light", "text-primaryBlue");
@@ -37,13 +46,19 @@ document.addEventListener("DOMContentLoaded", function () {
       btn.classList.add("bg-primaryBlue-light", "text-primaryBlue");
       btn.classList.remove("hover:bg-primaryBlue-light");
 
-      document.querySelectorAll(".section").forEach((section) => {
-        section.classList.add("hidden");
-      });
       const sectionId = btn.getAttribute("data-section");
+      if (!sectionId) return; // Skip if no data-section, e.g., settings link
+
       const sectionToShow = document.getElementById(sectionId);
+
       if (sectionToShow) {
+        document.querySelectorAll(".section").forEach((section) => {
+          section.classList.add("hidden");
+        });
         sectionToShow.classList.remove("hidden");
+      } else {
+        // Section not found, likely on settings page, redirect to dashboard with section
+        window.location.href = `/?section=${sectionId}`;
       }
 
       // Save active section to localStorage
