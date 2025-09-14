@@ -567,6 +567,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     sidebarToggle.addEventListener("click", () => {
+      console.log("Sidebar toggle clicked"); // Debug log
       sidebar.classList.toggle("collapsed");
       mainContent.classList.toggle("collapsed");
 

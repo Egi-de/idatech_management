@@ -1,0 +1,232 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}IDA Tech Management{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  </head>
+  <body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <div class="flex flex-col h-screen">
+      <nav
+        class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between"
+      >
+        <!-- Left side: Logo and hamburger menu -->
+        <div class="flex items-center space-x-4">
+          <button
+            id="sidebar-toggle"
+            aria-label="Toggle sidebar"
+            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+          >
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                d="M3 12h18M3 6h18M3 18h18"
+              ></path>
+            </svg>
+          </button>
+          <img
+            src="{% static 'images/idalog.jpg' %}"
+            alt="Ida Technology Logo"
+            class="w-36 object-contain sidebar-logo"
+          />
+        </div>
+
+        <!-- Right side: Icons and user profile -->
+        <div class="flex items-center space-x-6">
+          <form
+            id="search-form"
+            method="get"
+            action="{% url 'admin_panel:search' %}"
+            class="relative"
+          >
+            <input
+              type="text"
+              name="q"
+              id="search-input"
+              placeholder="Search..."
+              class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autocomplete="off"
+            />
+            <button
+              type="submit"
+              aria-label="Submit Search"
+              class="absolute right-0 top-0 mt-1 mr-1 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+            >
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
+          <button
+            aria-label="Fullscreen"
+            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+          >
+            <i class="fas fa-expand"></i>
+          </button>
+          <div class="relative group">
+            <button
+              class="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+            >
+              {% if profile.profile_picture %}
+              <img
+                src="{{ profile.profile_picture.url }}"
+                alt="User Avatar"
+                class="w-8 h-8 rounded-full object-cover"
+              />
+              {% else %}
+              <img
+                src="{% static 'images/idalog.jpg' %}"
+                alt="User Avatar"
+                class="w-8 h-8 rounded-full object-cover"
+              />
+              {% endif %}
+              <svg
+                class="w-4 h-4 text-gray-600"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M6 9l6 6 6-6"
+                ></path>
+              </svg>
+            </button>
+            <!-- Dropdown menu placeholder -->
+            <div
+              class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-10"
+            >
+              <a
+                href="{% url 'admin_panel:dashboard' %}"
+                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >Profile</a
+              >
+              <a
+                href="{% url 'auth:settings' %}"
+                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >Settings</a
+              >
+              <a
+                href="{% url 'auth:logout' %}"
+                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                >Logout</a
+              >
+            </div>
+          </div>
+        </div>
+      </nav>
+      <div class="flex flex-1 overflow-hidden">
+        <aside
+          id="sidebar"
+          class="bg-white shadow-md flex flex-col z-20 w-64 transition-width duration-300 ease-in-out"
+        >
+          <nav class="flex flex-col flex-grow overflow-y-auto">
+            <ul class="flex flex-col flex-grow space-y-1 p-2">
+              <li>
+                <a
+                  href="/?section=overview"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/' or request.GET.section == 'overview' or not request.GET.section %}active{% endif %}"
+                  data-section="overview"
+                  title="Dashboard"
+                >
+                  <i
+                    class="fas fa-tachometer-alt w-5 mr-3 {% if request.GET.section == 'overview' or not request.GET.section %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Dashboard</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/?section=students"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/students/' or request.GET.section == 'students' %}active{% endif %}"
+                  data-section="students"
+                  title="Students"
+                >
+                  <i
+                    class="fas fa-graduation-cap w-5 mr-3 {% if request.GET.section == 'students' %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Students</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/?section=employees"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/employees/' or request.GET.section == 'employees' %}active{% endif %}"
+                  data-section="employees"
+                  title="Employees"
+                >
+                  <i
+                    class="fas fa-users w-5 mr-3 {% if request.GET.section == 'employees' %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Employees</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/?section=financial"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/financial/' or request.GET.section == 'financial' %}active{% endif %}"
+                  data-section="financial"
+                  title="Financial"
+                >
+                  <i
+                    class="fas fa-dollar-sign w-5 mr-3 {% if request.GET.section == 'financial' %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Financial</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="/?section=reports"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/reports/' or request.GET.section == 'reports' %}active{% endif %}"
+                  data-section="reports"
+                  title="Reports"
+                >
+                  <i
+                    class="fas fa-chart-bar w-5 mr-3 {% if request.GET.section == 'reports' %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Reports</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="{% url 'auth:settings' %}"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
+                  title="Settings"
+                >
+                  <i
+                    class="fas fa-cog w-5 mr-3 {% if request.resolver_match.url_name == 'settings' %}text-white{% else %}text-blue-600{% endif %}"
+                  ></i>
+                  <span>Settings</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+        </aside>
+        <main id="main-content" class="flex-1 p-6 overflow-y-auto max-h-screen">
+          {% block content %}{% endblock %}
+        </main>
+      </div>
+    </div>
+    <script src="{% static 'script.js' %}"></script>
+    <script src="{% static 'ui-interactions.js' %}"></script>
+  </body>
+</html>
