@@ -230,7 +230,7 @@ document.addEventListener("DOMContentLoaded", function () {
     expenseForm.addEventListener("submit", function (e) {
       e.preventDefault();
       const formData = new FormData(expenseForm);
-      fetch("/admin_panel/add-expense/", {
+      fetch("/add-expense/", {
         method: "POST",
         headers: {
           "X-Requested-With": "XMLHttpRequest",
@@ -273,7 +273,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to load recent transactions dynamically
   function loadRecentTransactions() {
-    fetch("/admin_panel/recent-transactions/")
+    fetch("/recent-transactions/")
       .then((response) => response.json())
       .then((data) => {
         const transactionsTable = document.getElementById("transactions-table");
@@ -594,4 +594,100 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
   }
+
+  // Recent Activities filtering, sorting, and deleting
+  const filterAction = document.getElementById("filter-action");
+  const filterUser = document.getElementById("filter-user");
+  const sortBy = document.getElementById("sort-by");
+  const clearFilters = document.getElementById("clear-filters");
+
+  function loadRecentActivities() {
+    const params = new URLSearchParams();
+    if (filterAction && filterAction.value)
+      params.append("action_search", filterAction.value);
+    if (filterUser && filterUser.value) params.append("user", filterUser.value);
+    if (sortBy && sortBy.value !== "timestamp_desc")
+      params.append("sort_by", sortBy.value);
+
+    fetch(`/?${params.toString()}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const activities = data.activities;
+        const html = activities
+          .map(
+            (activity) => `
+        <div class="flex items-center p-3 bg-gray-50 rounded justify-between">
+          <div class="flex items-center">
+            <i class="${activity.icon_class} mr-3"></i>
+            <span>${activity.action}</span>
+          </div>
+          <button class="text-red-600 hover:text-red-900 delete-activity-btn" data-activity-id="${activity.id}" aria-label="Delete activity" title="Delete activity">
+            <i class="fas fa-trash"></i>
+          </button>
+        </div>
+      `
+          )
+          .join("");
+        document.getElementById("recent-activities").innerHTML =
+          html ||
+          '<div class="text-gray-500">No recent activities found.</div>';
+        attachDeleteListeners();
+      })
+      .catch((error) => {
+        console.error("Error loading activities:", error);
+        document.getElementById("recent-activities").innerHTML =
+          '<div class="text-red-500">Error loading activities. Please try again.</div>';
+      });
+  }
+
+  function attachDeleteListeners() {
+    document.querySelectorAll(".delete-activity-btn").forEach((btn) => {
+      btn.addEventListener("click", function () {
+        const activityId = this.getAttribute("data-activity-id");
+        if (confirm("Are you sure you want to delete this activity?")) {
+          fetch(`/delete-recent-activity/${activityId}/`, {
+            method: "POST",
+            headers: {
+              "X-CSRFToken": getCookie("csrftoken"),
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                this.closest(".flex").remove();
+              } else {
+                alert("Failed to delete activity.");
+              }
+            })
+            .catch((error) => console.error("Error deleting activity:", error));
+        }
+      });
+    });
+  }
+
+  if (filterAction)
+    filterAction.addEventListener("input", loadRecentActivities);
+  if (filterUser) filterUser.addEventListener("change", loadRecentActivities);
+  if (sortBy) sortBy.addEventListener("change", loadRecentActivities);
+  if (clearFilters) {
+    clearFilters.addEventListener("click", () => {
+      if (filterAction) filterAction.value = "";
+      if (filterUser) filterUser.value = "";
+      if (sortBy) sortBy.value = "timestamp_desc";
+      loadRecentActivities();
+    });
+  }
+
+  // Attach delete listeners on initial load
+  attachDeleteListeners();
 });

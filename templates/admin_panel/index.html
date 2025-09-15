@@ -400,11 +400,55 @@
 
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
+              <div class="mb-4 flex space-x-4 items-center">
+                <input
+                  type="text"
+                  id="filter-action"
+                  placeholder="Search actions..."
+                  class="border border-gray-300 rounded px-3 py-1"
+                />
+                <select
+                  id="filter-user"
+                  class="border border-gray-300 rounded px-3 py-1"
+                >
+                  <option value="">All Users</option>
+                  {% for user in user_list %}
+                  <option value="{{ user }}">{{ user }}</option>
+                  {% endfor %}
+                </select>
+                <select
+                  id="sort-by"
+                  class="border border-gray-300 rounded px-3 py-1"
+                >
+                  <option value="timestamp_desc">Newest First</option>
+                  <option value="timestamp_asc">Oldest First</option>
+                  <option value="action_asc">Action A-Z</option>
+                  <option value="action_desc">Action Z-A</option>
+                </select>
+                <button
+                  id="clear-filters"
+                  class="bg-gray-200 px-3 py-1 rounded"
+                >
+                  Clear
+                </button>
+              </div>
               <div class="space-y-3" id="recent-activities">
                 {% for activity in recent_activities %}
-                <div class="flex items-center p-3 bg-gray-50 rounded">
-                  <i class="{{ activity.icon_class }} mr-3"></i>
-                  <span>{{ activity.action }}</span>
+                <div
+                  class="flex items-center p-3 bg-gray-50 rounded justify-between"
+                >
+                  <div class="flex items-center">
+                    <i class="{{ activity.icon_class }} mr-3"></i>
+                    <span>{{ activity.action }}</span>
+                  </div>
+                  <button
+                    class="text-red-600 hover:text-red-900 delete-activity-btn"
+                    data-activity-id="{{ activity.id }}"
+                    aria-label="Delete activity"
+                    title="Delete activity"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
                 {% empty %}
                 <div class="text-gray-500">No recent activities found.</div>
