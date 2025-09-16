@@ -1,0 +1,42 @@
+{% extends "admin_panel/index.html" %}
+{% load static %}
+{% block content %}
+<div class="max-w-4xl mx-auto bg-white p-6 rounded shadow mt-6">
+  <h2 class="text-2xl font-bold mb-4">Trash Bin</h2>
+  <p class="mb-4 text-gray-600">Here are all the items you have deleted. They are stored here with the date and time of deletion.</p>
+
+  {% if trash_entries %}
+    <div class="overflow-x-auto">
+      <table class="min-w-full bg-white border border-gray-300 rounded-lg shadow-sm">
+        <thead>
+          <tr class="bg-gray-100 border-b border-gray-300">
+            <th class="py-3 px-6 text-left font-semibold text-gray-700">Item Type</th>
+            <th class="py-3 px-6 text-left font-semibold text-gray-700">Deleted At</th>
+            <th class="py-3 px-6 text-left font-semibold text-gray-700">Details</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in trash_entries %}
+            <tr class="hover:bg-gray-50 border-b border-gray-200">
+              <td class="py-3 px-6">{{ entry.item_type }}</td>
+              <td class="py-3 px-6">{{ entry.deleted_at|date:"M d, Y H:i" }}</td>
+              <td class="py-3 px-6">
+                {% if entry.item_data %}
+                  <details class="cursor-pointer">
+                    <summary class="text-blue-600 hover:underline">View Details</summary>
+                    <p class="mt-2 text-sm text-gray-800">{{ entry.formatted_item_data }}</p>
+                  </details>
+                {% else %}
+                  <span class="text-gray-500 italic">No details available</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p class="text-gray-500">No deleted items found.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -83,11 +83,21 @@ document.addEventListener("DOMContentLoaded", function () {
     studentForm.action = "/add-student/";
     studentModal.classList.remove("hidden");
     studentModal.classList.add("flex");
+    // Add blur to sidebar
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+      sidebar.classList.add("blurred");
+    }
   });
 
   cancelStudentBtn.addEventListener("click", () => {
     studentModal.classList.add("hidden");
     studentModal.classList.remove("flex");
+    // Remove blur from sidebar
+    const sidebar = document.getElementById("sidebar");
+    if (sidebar) {
+      sidebar.classList.remove("blurred");
+    }
   });
 
   // Intercept Edit Student links
@@ -273,20 +283,72 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Function to load recent transactions dynamically
   function loadRecentTransactions() {
-    fetch("/recent-transactions/")
+    const searchInput = document.getElementById("transaction-search");
+    const filterTypeSelect = document.getElementById("transaction-filter-type");
+    const sortBySelect = document.getElementById("transaction-sort-by");
+
+    const search = searchInput ? searchInput.value.trim() : "";
+    const filterType = filterTypeSelect ? filterTypeSelect.value : "";
+    const sortBy = sortBySelect ? sortBySelect.value : "date_desc";
+
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (filterType) params.append("filter_type", filterType);
+    if (sortBy) params.append("sort_by", sortBy);
+
+    fetch(`/recent-transactions/?${params.toString()}`)
       .then((response) => response.json())
       .then((data) => {
         const transactionsTable = document.getElementById("transactions-table");
         transactionsTable.innerHTML = "";
+        if (data.transactions.length === 0) {
+          const row = document.createElement("tr");
+          row.innerHTML = `<td colspan="5" class="text-center py-4 text-gray-500">No transactions found.</td>`;
+          transactionsTable.appendChild(row);
+          return;
+        }
         data.transactions.forEach((tx) => {
           const row = document.createElement("tr");
           row.innerHTML = `
             <td class="py-2">${tx.date}</td>
             <td class="py-2">${tx.type}</td>
             <td class="py-2">${tx.description}</td>
-            <td class="py-2 text-right">$${tx.amount}</td>
+            <td class="py-2 text-right">$${parseFloat(tx.amount).toFixed(2)}</td>
+            <td class="py-2 text-center">
+              <button class="text-red-600 hover:text-red-900 delete-transaction-btn" data-id="${tx.id}" aria-label="Delete transaction" title="Delete transaction">
+                <i class="fas fa-trash"></i>
+              </button>
+            </td>
           `;
           transactionsTable.appendChild(row);
+        });
+
+        // Attach delete event listeners
+        document.querySelectorAll(".delete-transaction-btn").forEach((btn) => {
+          btn.addEventListener("click", function () {
+            const transactionId = this.getAttribute("data-id");
+            if (confirm("Are you sure you want to delete this transaction?")) {
+              fetch(`/ajax-delete-transaction/${transactionId}/`, {
+                method: "POST",
+                headers: {
+                  "X-CSRFToken": getCookie("csrftoken"),
+                  "X-Requested-With": "XMLHttpRequest",
+                },
+              })
+                .then((response) => response.json())
+                .then((result) => {
+                  if (result.success) {
+                    loadRecentTransactions(); // Reload the table
+                  } else {
+                    alert("Failed to delete transaction: " + (result.error || ""));
+                  }
+                })
+                .catch((error) => {
+                  console.error("Error deleting transaction:", error);
+                  alert("An error occurred while deleting the transaction.");
+                });
+            }
+          });
         });
       })
       .catch((error) => {
@@ -296,6 +358,27 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Initial load of recent transactions on page load
   loadRecentTransactions();
+
+  // Event listeners for transaction search, filter, sort
+  const searchInput = document.getElementById("transaction-search");
+  const filterTypeSelect = document.getElementById("transaction-filter-type");
+  const sortBySelect = document.getElementById("transaction-sort-by");
+
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      loadRecentTransactions();
+    });
+  }
+  if (filterTypeSelect) {
+    filterTypeSelect.addEventListener("change", () => {
+      loadRecentTransactions();
+    });
+  }
+  if (sortBySelect) {
+    sortBySelect.addEventListener("change", () => {
+      loadRecentTransactions();
+    });
+  }
 
   // Filtering students by type and program with search integration
   const filterButtons = document.querySelectorAll(".filter-btn");
@@ -561,38 +644,36 @@ document.addEventListener("DOMContentLoaded", function () {
     // Restore sidebar state from localStorage
     const sidebarCollapsed =
       localStorage.getItem("sidebarCollapsed") === "true";
+    const contentWrapper = document.getElementById("content-wrapper");
+
+    if (!contentWrapper) {
+      console.warn("content-wrapper element not found");
+      return;
+    }
+
     if (sidebarCollapsed) {
-      sidebar.classList.add("collapsed");
-      mainContent.classList.add("collapsed");
+      sidebar.classList.remove("w-64");
+      sidebar.classList.add("w-16");
+      contentWrapper.classList.add("sidebar-collapsed");
+    } else {
+      sidebar.classList.add("w-64");
+      sidebar.classList.remove("w-16");
+      contentWrapper.classList.remove("sidebar-collapsed");
     }
 
     sidebarToggle.addEventListener("click", () => {
       console.log("Sidebar toggle clicked"); // Debug log
-      sidebar.classList.toggle("collapsed");
-      mainContent.classList.toggle("collapsed");
+     
 
-      // Toggle collapsed class on nav for margin adjustment
-      const nav = document.querySelector("nav");
-      if (nav) {
-        nav.classList.toggle("collapsed");
-      }
+      sidebar.classList.toggle("w-64");
+      sidebar.classList.toggle("w-16");
+
+      contentWrapper.classList.toggle("sidebar-collapsed");
 
       // Save state to localStorage
-      const isCollapsed = sidebar.classList.contains("collapsed");
+      const isCollapsed = sidebar.classList.contains("w-16");
       localStorage.setItem("sidebarCollapsed", isCollapsed);
     });
-
-    // On page load, also toggle nav collapsed class based on localStorage
-    const nav = document.querySelector("nav");
-    if (nav) {
-      const sidebarCollapsed =
-        localStorage.getItem("sidebarCollapsed") === "true";
-      if (sidebarCollapsed) {
-        nav.classList.add("collapsed");
-      } else {
-        nav.classList.remove("collapsed");
-      }
-    }
   }
 
   // Recent Activities filtering, sorting, and deleting

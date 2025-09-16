@@ -1,116 +1,131 @@
-{% extends "admin_panel/index.html" %} {% load static %} {% block content %}
-<div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6">
-  <h2 class="text-2xl font-bold mb-4">Profile Settings</h2>
-  <form
-    method="post"
-    action="{% url 'auth:settings' %}"
-    enctype="multipart/form-data"
-  >
-    {% csrf_token %}
-    <div class="mb-4">
-      <label
-        for="profile_picture"
-        class="block text-sm font-medium text-gray-700"
-        >Profile Picture</label
-      >
-      <div class="mb-2">
-        {% if profile.profile_picture %}
-        <img
-          id="profile-picture-preview"
-          src="{{ profile.profile_picture.url }}"
-          alt="Profile Picture"
-          class="w-24 h-24 rounded-full object-cover"
-        />
-        {% else %}
-        <img
-          id="profile-picture-preview"
-          src="{% static 'images/default-avatar.png' %}"
-          alt="Default Avatar"
-          class="w-24 h-24 rounded-full object-cover"
-        />
-        {% endif %}
-      </div>
-      <input
-        type="file"
-        id="profile_picture"
-        name="profile_picture"
-        accept="image/*"
-        class="mt-1 block w-full"
-        onchange="previewProfilePicture(event)"
-      />
-    </div>
-    <div class="mb-4">
-      <label for="username" class="block text-sm font-medium text-gray-700"
-        >Username</label
-      >
-      <input
-        type="text"
-        id="username"
-        name="username"
-        value="{{ user.username }}"
-        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        required
-      />
-    </div>
-    <div class="mb-4">
-      <label for="email" class="block text-sm font-medium text-gray-700"
-        >Email</label
-      >
-      <input
-        type="email"
-        id="email"
-        name="email"
-        value="{{ user.email }}"
-        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-        required
-      />
-    </div>
-    <hr class="my-6" />
-    <h3 class="text-lg font-semibold mb-4">Change Password</h3>
-    <div class="mb-4">
-      <label
-        for="current_password"
-        class="block text-sm font-medium text-gray-700"
-        >Current Password</label
-      >
-      <input
-        type="password"
-        id="current_password"
-        name="current_password"
-        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-      />
-    </div>
-    <div class="mb-4">
-      <label for="new_password" class="block text-sm font-medium text-gray-700"
-        >New Password</label
-      >
-      <input
-        type="password"
-        id="new_password"
-        name="new_password"
-        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-      />
-    </div>
-    <div class="mb-4">
-      <label
-        for="confirm_password"
-        class="block text-sm font-medium text-gray-700"
-        >Confirm New Password</label
-      >
-      <input
-        type="password"
-        id="confirm_password"
-        name="confirm_password"
-        class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-      />
-    </div>
-    <button
-      type="submit"
-      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+{% extends "admin_panel/index.html" %}
+{% load static %}
+{% block content %}
+<div class="settings-flex-container">
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6 settings-section">
+    <h2 class="text-2xl font-bold mb-4">Profile Settings</h2>
+    <form
+      method="post"
+      action="{% url 'auth:settings' %}"
+      enctype="multipart/form-data"
     >
-      Update Profile
-    </button>
-  </form>
+      {% csrf_token %}
+      <div class="mb-4">
+        <label
+          for="profile_picture"
+          class="block text-sm font-medium text-gray-700"
+          >Profile Picture</label
+        >
+        <div class="mb-2">
+          {% if profile.profile_picture %}
+          <img
+            id="profile-picture-preview"
+            src="{{ profile.profile_picture.url }}"
+            alt="Profile Picture"
+            class="w-24 h-24 rounded-full object-cover"
+          />
+          {% else %}
+          <img
+            id="profile-picture-preview"
+            src="{% static 'images/default-avatar.png' %}"
+            alt="Default Avatar"
+            class="w-24 h-24 rounded-full object-cover"
+          />
+          {% endif %}
+        </div>
+        <input
+          type="file"
+          id="profile_picture"
+          name="profile_picture"
+          accept="image/*"
+          class="mt-1 block w-full"
+          onchange="previewProfilePicture(event)"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="username" class="block text-sm font-medium text-gray-700"
+          >Username</label
+        >
+        <input
+          type="text"
+          id="username"
+          name="username"
+          value="{{ user.username }}"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          required
+        />
+      </div>
+      <div class="mb-4">
+        <label for="email" class="block text-sm font-medium text-gray-700"
+          >Email</label
+        >
+        <input
+          type="email"
+          id="email"
+          name="email"
+          value="{{ user.email }}"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+          required
+        />
+      </div>
+      <hr class="my-6" />
+      <h3 class="text-lg font-semibold mb-4">Change Password</h3>
+      <div class="mb-4">
+        <label
+          for="current_password"
+          class="block text-sm font-medium text-gray-700"
+          >Current Password</label
+        >
+        <input
+          type="password"
+          id="current_password"
+          name="current_password"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="new_password" class="block text-sm font-medium text-gray-700"
+          >New Password</label
+        >
+        <input
+          type="password"
+          id="new_password"
+          name="new_password"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        />
+      </div>
+      <div class="mb-4">
+        <label
+          for="confirm_password"
+          class="block text-sm font-medium text-gray-700"
+          >Confirm New Password</label
+        >
+        <input
+          type="password"
+          id="confirm_password"
+          name="confirm_password"
+          class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+        />
+      </div>
+      <button
+        type="submit"
+        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+      >
+        Update Profile
+      </button>
+    </form>
+  </div>
+
+  <div class="max-w-md mx-auto bg-white p-6 rounded shadow mt-6 settings-section">
+    <h3 class="text-lg font-semibold mb-4">Trash Bin</h3>
+    <p class="mb-4 text-gray-600">View all deleted items and their deletion times.</p>
+    <a
+      href="{% url 'admin_panel:trash_bin' %}"
+      class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 inline-block"
+    >
+      Go to Trash Bin
+    </a>
+  </div>
 </div>
 
 <script>
