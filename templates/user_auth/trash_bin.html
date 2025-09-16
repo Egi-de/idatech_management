@@ -13,6 +13,7 @@
             <th class="py-3 px-6 text-left font-semibold text-gray-700">Item Type</th>
             <th class="py-3 px-6 text-left font-semibold text-gray-700">Deleted At</th>
             <th class="py-3 px-6 text-left font-semibold text-gray-700">Details</th>
+            <th class="py-3 px-6 text-left font-semibold text-gray-700">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -29,6 +30,14 @@
                 {% else %}
                   <span class="text-gray-500 italic">No details available</span>
                 {% endif %}
+              </td>
+              <td class="py-3 px-6">
+<form method="post" action="{% url 'auth:restore_trash_entry' entry.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded">
+                    Restore
+                  </button>
+                </form>
               </td>
             </tr>
           {% endfor %}
