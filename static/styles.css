@@ -1,54 +1,36 @@
-.nav-btn:hover i,
-.nav-btn:focus i {
-  color: #1e40af; /* Tailwind blue-800 */
+/* Existing styles... */
+
+.blurred {
+  filter: blur(4px);
+  transition: filter 0.3s ease;
 }
 
-.nav-btn.active {
-  background-color: #477ef4; /* Tailwind blue-800 */
-  color: white;
+.settings-flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  margin: 2rem auto;
+  max-width: 900px;
+  padding: 0 1rem;
 }
 
-.nav-btn.active i {
-  color: white;
+.settings-section {
+  flex: 1 1 400px;
+  max-width: 450px;
+  box-sizing: border-box;
 }
 
-/* Styles for filter buttons in student management section */
-.filter-btn {
-  transition: background-color 0.3s ease, color 0.3s ease;
-  cursor: pointer;
-  border: 1px solid transparent;
+/* Sidebar collapsed styles */
+#sidebar {
+  transition: width 0.3s ease-in-out;
 }
 
-.filter-btn.bg-blue-500 {
-  background-color: #3b82f6; /* Tailwind blue-500 */
-  color: white;
+#content-wrapper.sidebar-collapsed #sidebar .nav-btn span {
+  display: none;
 }
 
-.filter-btn.bg-gray-200 {
-  background-color: #e5e7eb; /* Tailwind gray-200 */
-  color: #374151; /* Tailwind gray-700 */
+#content-wrapper.sidebar-collapsed #sidebar .nav-btn i {
+  margin-right: 0;
 }
 
-.filter-btn[disabled] {
-  background-color: #f3f4f6; /* Tailwind gray-100 */
-  color: #9ca3af; /* Tailwind gray-400 */
-  cursor: not-allowed;
-  border: 1px solid #d1d5db; /* Tailwind gray-300 */
-}
-
-/* Sidebar toggle collapsed styles */
-#sidebar.collapsed {
-  width: 0 !important;
-  overflow: hidden;
-  transition: width 0.3s ease;
-}
-
-#main-content.collapsed {
-  margin-left: 0 !important;
-  transition: margin-left 0.3s ease;
-}
-
-nav.collapsed {
-  margin-left: 0 !important;
-  transition: margin-left 0.3s ease;
-}

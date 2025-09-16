@@ -3,9 +3,14 @@ from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
-from .models import Student, Employee, Expense, Transaction, RecentActivity
+from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry
 from django.contrib.auth.decorators import login_required
 from user_auth.models import Profile
+import json
+from django.utils import timezone
+from django.core.serializers import serialize
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.contenttypes.fields import GenericForeignKey
 
 @login_required
 def dashboard(request):
@@ -109,6 +114,18 @@ def dashboard(request):
 def delete_recent_activity(request, activity_id):
     if request.method == 'POST':
         activity = get_object_or_404(RecentActivity, id=activity_id)
+        # Save to TrashBinEntry before deleting
+        TrashBinEntry.objects.create(
+            user=request.user,
+            item_type='RecentActivity',
+            item_id=activity.id,
+            item_data={
+                'action': activity.action,
+                'icon_class': activity.icon_class,
+                'timestamp': activity.timestamp.isoformat(),
+            },
+            deleted_at=timezone.now()
+        )
         activity.delete()
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
@@ -240,6 +257,14 @@ def update_student(request, student_id):
 def delete_student(request, student_id):
     student = get_object_or_404(Student, id=student_id)
     if request.method == 'POST':
+        # Save to TrashBinEntry before deleting
+        TrashBinEntry.objects.create(
+            user=request.user,
+            item_type='Student',
+            item_id=student.id,
+            item_data=json.loads(serialize('json', [student]))[0]['fields'],
+            deleted_at=timezone.now()
+        )
         # Create recent activity before deleting
         RecentActivity.objects.create(
             user=request.user,
@@ -284,6 +309,14 @@ def update_employee(request, employee_id):
 def delete_employee(request, employee_id):
     employee = get_object_or_404(Employee, id=employee_id)
     if request.method == 'POST':
+        # Save to TrashBinEntry before deleting
+        TrashBinEntry.objects.create(
+            user=request.user,
+            item_type='Employee',
+            item_id=employee.id,
+            item_data=json.loads(serialize('json', [employee]))[0]['fields'],
+            deleted_at=timezone.now()
+        )
         # Create recent activity before deleting
         RecentActivity.objects.create(
             user=request.user,
@@ -337,16 +370,67 @@ def add_expense(request):
     return redirect('admin_panel:dashboard')
 
 def recent_transactions(request):
-    transactions = Transaction.objects.order_by('-date')[:5]
+    # Get query params for filtering, sorting, searching
+    search_query = request.GET.get('search', '').strip()
+    sort_by = request.GET.get('sort_by', 'date_desc')
+    filter_type = request.GET.get('filter_type', '')
+
+    transactions_qs = Transaction.objects.all()
+
+    # Filter by type if provided
+    if filter_type:
+        transactions_qs = transactions_qs.filter(type=filter_type)
+
+    # Search in description and type display
+    if search_query:
+        transactions_qs = transactions_qs.filter(
+            Q(description__icontains=search_query) |
+            Q(type__icontains=search_query)
+        )
+
+    # Sorting
+    if sort_by == 'date_asc':
+        transactions_qs = transactions_qs.order_by('date')
+    elif sort_by == 'date_desc':
+        transactions_qs = transactions_qs.order_by('-date')
+    elif sort_by == 'amount_asc':
+        transactions_qs = transactions_qs.order_by('amount')
+    elif sort_by == 'amount_desc':
+        transactions_qs = transactions_qs.order_by('-amount')
+    else:
+        transactions_qs = transactions_qs.order_by('-date')
+
+    # Limit to 50 for performance
+    transactions = transactions_qs[:50]
+
     data = []
     for tx in transactions:
         data.append({
+            'id': tx.id,
             'date': tx.date.strftime('%Y-%m-%d'),
             'type': tx.get_type_display(),
             'description': tx.description,
             'amount': str(tx.amount),
         })
     return JsonResponse({'transactions': data})
+
+@login_required
+@require_POST
+def ajax_delete_transaction(request, transaction_id):
+    try:
+        transaction = Transaction.objects.get(id=transaction_id)
+        # Save to TrashBinEntry before deleting
+        TrashBinEntry.objects.create(
+            user=request.user,
+            item_type='Transaction',
+            item_id=transaction.id,
+            item_data=json.loads(serialize('json', [transaction]))[0]['fields'],
+            deleted_at=timezone.now()
+        )
+        transaction.delete()
+        return JsonResponse({'success': True})
+    except Transaction.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Transaction not found'})
 
 @login_required
 def update_expense(request, expense_id):
@@ -370,6 +454,14 @@ def update_expense(request, expense_id):
 def delete_expense(request, expense_id):
     expense = get_object_or_404(Expense, id=expense_id)
     if request.method == 'POST':
+        # Save to TrashBinEntry before deleting
+        TrashBinEntry.objects.create(
+            user=request.user,
+            item_type='Expense',
+            item_id=expense.id,
+            item_data=json.loads(serialize('json', [expense]))[0]['fields'],
+            deleted_at=timezone.now()
+        )
         # Create recent activity before deleting
         RecentActivity.objects.create(
             user=request.user,
@@ -469,3 +561,11 @@ def search(request):
         'expenses': expenses,
     }
     return render(request, 'admin_panel/search_results.html', context)
+
+@login_required
+def trash_bin(request):
+    trash_entries = TrashBinEntry.objects.filter(user=request.user).order_by('-deleted_at')
+    context = {
+        'trash_entries': trash_entries,
+    }
+    return render(request, 'user_auth/trash_bin.html', context)

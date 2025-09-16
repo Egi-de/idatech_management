@@ -20,4 +20,6 @@ urlpatterns = [
     path('delete-transaction/<int:transaction_id>/', views.delete_transaction, name='delete_transaction'),
     path('search/', views.search, name='search'),
     path('delete-recent-activity/<int:activity_id>/', views.delete_recent_activity, name='delete_recent_activity'),
+    path('ajax-delete-transaction/<int:transaction_id>/', views.ajax_delete_transaction, name='ajax_delete_transaction'),
+    path('trash-bin/', views.trash_bin, name='trash_bin'),
 ]

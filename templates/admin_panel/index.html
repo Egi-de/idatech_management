@@ -245,7 +245,7 @@
           </div>
         </div>
       </nav>
-      <div class="flex flex-1 overflow-hidden">
+      <div id="content-wrapper" class="flex flex-1 overflow-hidden">
         <aside
           id="sidebar"
           class="bg-white shadow-md flex flex-col z-20 w-64 transition-width duration-300 ease-in-out"
@@ -744,6 +744,7 @@
                     <label class="block text-sm font-medium mb-2">Type</label>
                     <select
                       id="expense-type"
+                      name="expense-type"
                       class="w-full px-3 py-2 border rounded-lg"
                     >
                       <option value="salary">Salary</option>
@@ -758,6 +759,7 @@
                     <input
                       type="text"
                       id="expense-description"
+                      name="expense-description"
                       class="w-full px-3 py-2 border rounded-lg"
                       required
                     />
@@ -767,6 +769,7 @@
                     <input
                       type="number"
                       id="expense-amount"
+                      name="expense-amount"
                       class="w-full px-3 py-2 border rounded-lg"
                       required
                     />
@@ -782,8 +785,34 @@
             </div>
 
             <div class="bg-white rounded-lg shadow">
-              <div class="p-6 border-b">
+              <div class="p-6 border-b flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                 <h3 class="text-lg font-semibold">Recent Transactions</h3>
+                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+                  <input
+                    type="text"
+                    id="transaction-search"
+                    placeholder="Search transactions..."
+                    class="border border-gray-300 rounded px-3 py-1"
+                  />
+                  <select
+                    id="transaction-filter-type"
+                    class="border border-gray-300 rounded px-3 py-1"
+                  >
+                    <option value="">All Types</option>
+                    <option value="salary">Salary</option>
+                    <option value="transport">Transport</option>
+                    <option value="other">Other</option>
+                  </select>
+                  <select
+                    id="transaction-sort-by"
+                    class="border border-gray-300 rounded px-3 py-1"
+                  >
+                    <option value="date_desc">Date Descending</option>
+                    <option value="date_asc">Date Ascending</option>
+                    <option value="amount_desc">Amount Descending</option>
+                    <option value="amount_asc">Amount Ascending</option>
+                  </select>
+                </div>
               </div>
               <div class="p-6">
                 <div class="overflow-x-auto max-w-full">
@@ -794,6 +823,7 @@
                         <th class="text-left py-2">Type</th>
                         <th class="text-left py-2">Description</th>
                         <th class="text-right py-2">Amount</th>
+                        <th class="text-center py-2">Actions</th>
                       </tr>
                     </thead>
                     <tbody id="transactions-table"></tbody>
