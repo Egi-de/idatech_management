@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from django.http import JsonResponse
 from django.middleware.csrf import get_token
 from .models import Student, Employee, Expense, Transaction, RecentActivity
@@ -24,8 +24,42 @@ def dashboard(request):
     # Recent transactions (last 5)
     recent_transactions = Transaction.objects.order_by('-date')[:5]
 
-    # Recent activities (last 5)
-    recent_activities = RecentActivity.objects.order_by('-timestamp')[:5]
+    # Filtering and sorting for recent activities
+    recent_activities_qs = RecentActivity.objects.all()
+
+    # Filtering by user
+    user_filter = request.GET.get('user')
+    if user_filter:
+        recent_activities_qs = recent_activities_qs.filter(user__username__icontains=user_filter)
+
+    # Filtering by action text search
+    action_search = request.GET.get('action_search')
+    if action_search:
+        recent_activities_qs = recent_activities_qs.filter(action__icontains=action_search)
+
+    # Filtering by date range
+    start_date = request.GET.get('start_date')
+    end_date = request.GET.get('end_date')
+    if start_date and end_date:
+        recent_activities_qs = recent_activities_qs.filter(timestamp__date__range=[start_date, end_date])
+
+    # Sorting
+    sort_by = request.GET.get('sort_by', 'timestamp_desc')
+    if sort_by == 'timestamp_asc':
+        recent_activities_qs = recent_activities_qs.order_by('timestamp')
+    elif sort_by == 'action_asc':
+        recent_activities_qs = recent_activities_qs.order_by('action')
+    elif sort_by == 'action_desc':
+        recent_activities_qs = recent_activities_qs.order_by('-action')
+    else:
+        # Default to timestamp descending
+        recent_activities_qs = recent_activities_qs.order_by('-timestamp')
+
+    # Limit to 20 for performance
+    recent_activities = recent_activities_qs[:20]
+
+    # Populate user filter dropdown with distinct usernames
+    user_list = RecentActivity.objects.values_list('user__username', flat=True).distinct().order_by('user__username')
 
     # Fetch all students, employees, expenses for rendering
     students = Student.objects.all()
@@ -50,8 +84,36 @@ def dashboard(request):
         'employees': employees,
         'expenses': expenses,
         'profile': profile,
+        'user_list': user_list,
     }
+
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Return JSON for AJAX GET requests (for filtering/sorting)
+        if request.method == 'GET':
+            activities = []
+            for activity in recent_activities:
+                activities.append({
+                    'id': activity.id,
+                    'action': activity.action,
+                    'icon_class': activity.icon_class,
+                    'timestamp': activity.timestamp.isoformat(),
+                    'user': activity.user.username,
+                })
+            return JsonResponse({'activities': activities})
+        # Return only the recent activities partial HTML for AJAX POST requests (legacy, if any)
+        return render(request, 'admin_panel/recent_activities_partial.html', context)
+
     return render(request, 'admin_panel/index.html', context)
+
+@login_required
+def delete_recent_activity(request, activity_id):
+    if request.method == 'POST':
+        activity = get_object_or_404(RecentActivity, id=activity_id)
+        activity.delete()
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+        return redirect('admin_panel:dashboard')
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 @require_POST
 @login_required
@@ -95,10 +157,6 @@ def add_student(request):
                 }
             })
     return redirect('admin_panel:dashboard')
-
-
-
-
 
 @require_POST
 @login_required
@@ -378,9 +436,6 @@ def fetch_tab_data(request, tab_name):
         data = []
 
     return JsonResponse({'data': list(data)})
-
-from django.db.models import Q
-from django.contrib.auth.decorators import login_required
 
 @login_required
 def search(request):

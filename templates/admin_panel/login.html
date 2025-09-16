@@ -13,7 +13,9 @@
   </head>
   <body class="bg-lightBlue min-h-screen flex items-center justify-center">
     <div class="bg-white p-8 rounded shadow-md w-96">
-      <h2 class="text-2xl font-bold mb-6 text-center text-navyCharcoal">
+      <h2
+        class="text-2xl font-bold mb-6 text-center bg-primaryBlue text-black px-4 py-2 rounded"
+      >
         Login
       </h2>
       {% if messages %}
@@ -56,6 +58,7 @@
         <button
           type="submit"
           class="w-full bg-primaryBlue text-white py-2 rounded hover:bg-primaryBlue-dark"
+          style="background-color: #3e7ae1; color: white"
         >
           Login
         </button>
@@ -64,7 +67,8 @@
         Don't have an account?
         <a
           href="{% url 'auth:register' %}"
-          class="text-primaryBlue hover:underline"
+          class="text-primaryBlue hover:underline bg-primaryBlue rounded hover:bg-primaryBlue-dark"
+          style="color: rgb(17, 52, 143)"
           >Register here</a
         >
       </p>

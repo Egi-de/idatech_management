@@ -161,12 +161,28 @@
 
         <!-- Right side: Icons and user profile -->
         <div class="flex items-center space-x-6">
-          <button
-            aria-label="Search"
-            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+          <form
+            id="search-form"
+            method="get"
+            action="{% url 'admin_panel:search' %}"
+            class="relative"
           >
-            <i class="fas fa-search"></i>
-          </button>
+            <input
+              type="text"
+              name="q"
+              id="search-input"
+              placeholder="Search..."
+              class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              autocomplete="off"
+            />
+            <button
+              type="submit"
+              aria-label="Submit Search"
+              class="absolute right-0 top-0 mt-1 mr-1 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
+            >
+              <i class="fas fa-search"></i>
+            </button>
+          </form>
           <button
             aria-label="Fullscreen"
             class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
@@ -384,11 +400,55 @@
 
             <div class="bg-white rounded-lg shadow p-6">
               <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
+              <div class="mb-4 flex space-x-4 items-center">
+                <input
+                  type="text"
+                  id="filter-action"
+                  placeholder="Search actions..."
+                  class="border border-gray-300 rounded px-3 py-1"
+                />
+                <select
+                  id="filter-user"
+                  class="border border-gray-300 rounded px-3 py-1"
+                >
+                  <option value="">All Users</option>
+                  {% for user in user_list %}
+                  <option value="{{ user }}">{{ user }}</option>
+                  {% endfor %}
+                </select>
+                <select
+                  id="sort-by"
+                  class="border border-gray-300 rounded px-3 py-1"
+                >
+                  <option value="timestamp_desc">Newest First</option>
+                  <option value="timestamp_asc">Oldest First</option>
+                  <option value="action_asc">Action A-Z</option>
+                  <option value="action_desc">Action Z-A</option>
+                </select>
+                <button
+                  id="clear-filters"
+                  class="bg-gray-200 px-3 py-1 rounded"
+                >
+                  Clear
+                </button>
+              </div>
               <div class="space-y-3" id="recent-activities">
                 {% for activity in recent_activities %}
-                <div class="flex items-center p-3 bg-gray-50 rounded">
-                  <i class="{{ activity.icon_class }} mr-3"></i>
-                  <span>{{ activity.action }}</span>
+                <div
+                  class="flex items-center p-3 bg-gray-50 rounded justify-between"
+                >
+                  <div class="flex items-center">
+                    <i class="{{ activity.icon_class }} mr-3"></i>
+                    <span>{{ activity.action }}</span>
+                  </div>
+                  <button
+                    class="text-red-600 hover:text-red-900 delete-activity-btn"
+                    data-activity-id="{{ activity.id }}"
+                    aria-label="Delete activity"
+                    title="Delete activity"
+                  >
+                    <i class="fas fa-trash"></i>
+                  </button>
                 </div>
                 {% empty %}
                 <div class="text-gray-500">No recent activities found.</div>
@@ -449,90 +509,92 @@
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
-              <table class="w-full">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Name
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Type
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Category
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Program
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Level
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="students-table" class="divide-y divide-gray-200">
-                  {% for student in students %}
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ student.name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ student.type }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ student.category }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ student.program }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ student.level }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <a
-                        href="{% url 'admin_panel:update_student' student.id %}"
-                        class="text-indigo-600 hover:text-indigo-900 mr-2"
-                        >Edit</a
+              <div class="overflow-x-auto max-w-full">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                      <form
-                        action="{% url 'admin_panel:delete_student' student.id %}"
-                        method="post"
-                        class="inline"
+                        Name
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                        {% csrf_token %}
-                        <button
-                          type="submit"
-                          class="text-red-600 hover:text-red-900"
-                          onclick="return confirm('Are you sure you want to delete this student?');"
+                        Type
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Category
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Program
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Level
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="students-table" class="divide-y divide-gray-200">
+                    {% for student in students %}
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ student.name }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ student.type }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ student.category }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ student.program }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ student.level }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <a
+                          href="{% url 'admin_panel:update_student' student.id %}"
+                          class="text-indigo-600 hover:text-indigo-900 mr-2"
+                          >Edit</a
                         >
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="6" class="text-center py-4">
-                      No students found.
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                        <form
+                          action="{% url 'admin_panel:delete_student' student.id %}"
+                          method="post"
+                          class="inline"
+                        >
+                          {% csrf_token %}
+                          <button
+                            type="submit"
+                            class="text-red-600 hover:text-red-900"
+                            onclick="return confirm('Are you sure you want to delete this student?');"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="6" class="text-center py-4">
+                        No students found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 
@@ -558,82 +620,84 @@
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
-              <table class="w-full">
-                <thead class="bg-gray-50">
-                  <tr>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Name
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Position
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Department
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Salary
-                    </th>
-                    <th
-                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody id="employees-table" class="divide-y divide-gray-200">
-                  {% for employee in employees %}
-                  <tr>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ employee.name }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ employee.position }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      {{ employee.department }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      ${{ employee.salary }}
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <a
-                        href="{% url 'admin_panel:update_employee' employee.id %}"
-                        class="text-indigo-600 hover:text-indigo-900 mr-2"
-                        >Edit</a
+              <div class="overflow-x-auto max-w-full">
+                <table class="w-full">
+                  <thead class="bg-gray-50">
+                    <tr>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                      <form
-                        action="{% url 'admin_panel:delete_employee' employee.id %}"
-                        method="post"
-                        class="inline"
+                        Name
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                        {% csrf_token %}
-                        <button
-                          type="submit"
-                          class="text-red-600 hover:text-red-900"
-                          onclick="return confirm('Are you sure you want to delete this employee?');"
+                        Position
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Department
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Salary
+                      </th>
+                      <th
+                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      >
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody id="employees-table" class="divide-y divide-gray-200">
+                    {% for employee in employees %}
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ employee.name }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ employee.position }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        {{ employee.department }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        ${{ employee.salary }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <a
+                          href="{% url 'admin_panel:update_employee' employee.id %}"
+                          class="text-indigo-600 hover:text-indigo-900 mr-2"
+                          >Edit</a
                         >
-                          Delete
-                        </button>
-                      </form>
-                    </td>
-                  </tr>
-                  {% empty %}
-                  <tr>
-                    <td colspan="5" class="text-center py-4">
-                      No employees found.
-                    </td>
-                  </tr>
-                  {% endfor %}
-                </tbody>
-              </table>
+                        <form
+                          action="{% url 'admin_panel:delete_employee' employee.id %}"
+                          method="post"
+                          class="inline"
+                        >
+                          {% csrf_token %}
+                          <button
+                            type="submit"
+                            class="text-red-600 hover:text-red-900"
+                            onclick="return confirm('Are you sure you want to delete this employee?');"
+                          >
+                            Delete
+                          </button>
+                        </form>
+                      </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="5" class="text-center py-4">
+                        No employees found.
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </section>
 
@@ -722,17 +786,19 @@
                 <h3 class="text-lg font-semibold">Recent Transactions</h3>
               </div>
               <div class="p-6">
-                <table class="w-full">
-                  <thead>
-                    <tr class="border-b">
-                      <th class="text-left py-2">Date</th>
-                      <th class="text-left py-2">Type</th>
-                      <th class="text-left py-2">Description</th>
-                      <th class="text-right py-2">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody id="transactions-table"></tbody>
-                </table>
+                <div class="overflow-x-auto max-w-full">
+                  <table class="w-full">
+                    <thead>
+                      <tr class="border-b">
+                        <th class="text-left py-2">Date</th>
+                        <th class="text-left py-2">Type</th>
+                        <th class="text-left py-2">Description</th>
+                        <th class="text-right py-2">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody id="transactions-table"></tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </section>

@@ -1,199 +1,54 @@
-/* Updated color palette */
-:root {
-  --primary-brand-blue: #020c29;
-  --secondary-blue: #02102d;
-  --light-background: #f8fafc;
-  --card-panel-background: #ffffff;
-  --neutral-border: #e2e8f0;
-  --text-dark: #0f172a;
-  --accent-success: #10b981;
-  --accent-warning: #f59e0b;
-}
-
-body {
-  background-color: var(--light-background);
-  color: var(--text-dark);
-}
-
-.nav-btn {
-  background-color: var(--card-panel-background);
-  border: 1px solid var(--neutral-border);
-  color: var(--text-dark);
+.nav-btn:hover i,
+.nav-btn:focus i {
+  color: #1e40af; /* Tailwind blue-800 */
 }
 
 .nav-btn.active {
-  background-color: var(--primary-brand-blue);
-  color: var(--card-panel-background);
+  background-color: #477ef4; /* Tailwind blue-800 */
+  color: white;
 }
 
-.button-success {
-  background-color: var(--accent-success);
-  color: var(--card-panel-background);
+.nav-btn.active i {
+  color: white;
 }
 
-.button-warning {
-  background-color: var(--accent-warning);
-  color: var(--card-panel-background);
+/* Styles for filter buttons in student management section */
+.filter-btn {
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
 }
 
-.sidebar-logo {
-  width: 150px;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
-  object-fit: contain;
-  transition: opacity 0.3s ease;
+.filter-btn.bg-blue-500 {
+  background-color: #3b82f6; /* Tailwind blue-500 */
+  color: white;
 }
 
-/* Sidebar toggle styles */
-#sidebar {
-  width: 220px;
-  transition: width 0.3s ease;
-  position: relative;
-  overflow-x: visible; /* Changed from hidden to visible to fix clipping */
-  height: 100vh;
+.filter-btn.bg-gray-200 {
+  background-color: #e5e7eb; /* Tailwind gray-200 */
+  color: #374151; /* Tailwind gray-700 */
 }
 
+.filter-btn[disabled] {
+  background-color: #f3f4f6; /* Tailwind gray-100 */
+  color: #9ca3af; /* Tailwind gray-400 */
+  cursor: not-allowed;
+  border: 1px solid #d1d5db; /* Tailwind gray-300 */
+}
+
+/* Sidebar toggle collapsed styles */
 #sidebar.collapsed {
-  width: 80px;
-}
-
-/* Fix collapsed sidebar nav buttons to hide text but keep icons visible */
-#sidebar.collapsed nav ul li button,
-#sidebar.collapsed nav ul li a {
-  text-indent: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  padding-left: 0;
-}
-
-#sidebar.collapsed nav ul li button i,
-#sidebar.collapsed nav ul li a i {
-  position: static;
-  text-indent: 0;
-  display: inline-block;
-  width: 24px;
-  text-align: center;
-  color: #2563eb; /* Tailwind blue-600 */
-  font-size: 1.25rem;
-}
-
-/* Remove old ::before pseudo-elements for icons */
-/* (No ::before content styles present now) */
-
-#sidebar.collapsed nav {
-  display: block;
-  overflow: visible;
-}
-
-/* Fix collapsed sidebar nav ul and buttons layout */
-#sidebar.collapsed nav ul {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-left: 0;
-  margin-left: 0;
-  list-style: none;
-  height: 100%;
-  gap: 0.5rem; /* space between buttons */
-}
-
-#sidebar.collapsed nav ul li button,
-#sidebar.collapsed nav ul li a {
-  width: 48px;
-  padding-left: 0;
-  padding-right: 0;
-  text-indent: 100%;
-  white-space: nowrap;
-  overflow: hidden;
-  position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: 0 auto;
-  border-radius: 0.375rem; /* rounded */
-}
-
-/* Debugging styles to highlight sidebar and nav buttons */
-#sidebar {
-  border: none !important;
-  background-color: transparent !important;
-}
-
-nav ul li button.nav-btn,
-nav ul li a.nav-btn {
-  border: none !important;
-  background-color: transparent !important;
-  color: #2563eb !important; /* Tailwind blue-600 */
-  display: flex !important;
-  justify-content: flex-start !important;
-  padding-left: 1rem !important;
-  text-indent: 0 !important;
-  white-space: normal !important;
-  overflow: visible !important;
-}
-
-/* Show nav button labels when sidebar expanded */
-#sidebar:not(.collapsed) nav ul li button span,
-#sidebar:not(.collapsed) nav ul li a span {
-  display: inline;
-  margin-left: 0.75rem;
-}
-
-/* Hide nav button labels when sidebar collapsed */
-#sidebar.collapsed nav ul li button span,
-#sidebar.collapsed nav ul li a span {
-  display: none;
-}
-
-#sidebar.collapsed nav ul li button i,
-#sidebar.collapsed nav ul li a i {
-  position: static;
-  text-indent: 0;
-  display: inline-block;
-  width: auto;
-  text-align: center;
-  color: #2563eb; /* Tailwind blue-600 */
-  font-size: 1.5rem;
-}
-
-#sidebar.collapsed .sidebar-logo {
-  opacity: 0 !important;
-  pointer-events: none !important;
-  display: none !important; /* Hide image completely when sidebar collapsed */
   width: 0 !important;
-  height: 0 !important;
-  overflow: hidden !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  position: absolute !important; /* Ensure it does not take space */
-  left: -9999px !important; /* Move it off screen */
-  visibility: hidden !important; /* Additional to ensure invisibility */
-}
-
-#sidebar.collapsed #sidebar-toggle {
-  margin-bottom: 0;
-}
-
-#sidebar.collapsed .border-t a.nav-btn span {
-  display: none;
-}
-
-#sidebar.collapsed .border-t a.nav-btn i {
-  display: inline-block;
-  width: 24px;
-  text-align: center;
-  color: #2563eb; /* Tailwind blue-600 */
-  font-size: 1.25rem;
-}
-
-#main-content {
-  margin-left: 20px;
-  transition: margin-left 0.3s ease;
-  padding-top: 1rem; /* Added padding to reduce gap */
-  padding-left: 0; /* Remove left padding to reduce gap between sidebar and main */
+  overflow: hidden;
+  transition: width 0.3s ease;
 }
 
 #main-content.collapsed {
-  margin-left: 80px;
+  margin-left: 0 !important;
+  transition: margin-left 0.3s ease;
+}
+
+nav.collapsed {
+  margin-left: 0 !important;
+  transition: margin-left 0.3s ease;
 }
