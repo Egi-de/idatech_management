@@ -8,4 +8,6 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('register/', views.register, name='register'),
     path('settings/', views.profile_settings, name='settings'),
+    path('trash-bin/', views.trash_bin, name='trash_bin'),
+    path('restore-trash-entry/<int:entry_id>/', views.restore_trash_entry, name='restore_trash_entry'),
 ]

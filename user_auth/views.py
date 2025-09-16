@@ -1,9 +1,14 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import check_password
+from django.http import HttpResponseForbidden, Http404
+from django.urls import reverse
+from admin_panel.models import TrashBinEntry, RecentActivity, Expense, Transaction
+from admin_panel.models import Student
+from django.views.decorators.http import require_POST
 
 # Create your views here.
 
@@ -102,3 +107,59 @@ def profile_settings(request):
         return redirect('auth:settings')
 
     return render(request, 'user_auth/settings.html', {'user': user, 'profile': profile})
+
+@login_required
+def trash_bin(request):
+    trash_entries = TrashBinEntry.objects.filter(user=request.user).order_by('-deleted_at')
+    return render(request, 'user_auth/trash_bin.html', {'trash_entries': trash_entries})
+
+@login_required
+@require_POST
+def restore_trash_entry(request, entry_id):
+    entry = get_object_or_404(TrashBinEntry, id=entry_id, user=request.user)
+    item_type = entry.item_type
+    item_id = entry.item_id
+    item_data = entry.item_data
+
+    try:
+        if item_type == 'RecentActivity':
+            # Restore RecentActivity from item_data
+            RecentActivity.objects.create(
+                user=request.user,
+                action=item_data.get('action', ''),
+                icon_class=item_data.get('icon_class', 'fas fa-info-circle'),
+                timestamp=item_data.get('timestamp')
+            )
+        elif item_type == 'Expense':
+            Expense.objects.create(
+                type=item_data.get('type', ''),
+                description=item_data.get('description', ''),
+                amount=item_data.get('amount', 0),
+                date=item_data.get('date')
+            )
+        elif item_type == 'Transaction':
+            Transaction.objects.create(
+                date=item_data.get('date'),
+                type=item_data.get('type', ''),
+                description=item_data.get('description', ''),
+                amount=item_data.get('amount', 0)
+            )
+        elif item_type == 'Student':
+            Student.objects.create(
+                name=item_data.get('name', ''),
+                type=item_data.get('type', ''),
+                category=item_data.get('category', ''),
+                program=item_data.get('program', ''),
+                level=item_data.get('level', '')
+            )
+        else:
+            messages.error(request, f"Restore not implemented for item type: {item_type}")
+            return redirect('auth:trash_bin')
+
+        # Delete the trash entry after successful restore
+        entry.delete()
+        messages.success(request, f"{item_type} restored successfully.")
+    except Exception as e:
+        messages.error(request, f"Error restoring {item_type}: {str(e)}")
+
+    return redirect('auth:trash_bin')

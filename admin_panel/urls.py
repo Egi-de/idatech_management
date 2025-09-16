@@ -22,4 +22,9 @@ urlpatterns = [
     path('delete-recent-activity/<int:activity_id>/', views.delete_recent_activity, name='delete_recent_activity'),
     path('ajax-delete-transaction/<int:transaction_id>/', views.ajax_delete_transaction, name='ajax_delete_transaction'),
     path('trash-bin/', views.trash_bin, name='trash_bin'),
+    path('student-report/<int:student_id>/', views.student_report_detail, name='student_report_detail'),
+    path('export-student-report-pdf/<int:student_id>/', views.export_student_report_pdf, name='export_student_report_pdf'),
+    path('export-student-report-excel/<int:student_id>/', views.export_student_report_excel, name='export_student_report_excel'),
+    path('email-student-report/<int:student_id>/', views.email_student_report, name='email_student_report'),
+    path('bulk-delete-students/', views.bulk_delete_students, name='bulk_delete_students'),
 ]

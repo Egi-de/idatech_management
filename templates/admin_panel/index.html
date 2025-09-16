@@ -494,25 +494,44 @@
                   SoD
                 </button>
               </div>
-              <input
-                type="text"
-                id="student-search"
-                placeholder="Search students by name..."
-                class="border border-gray-300 rounded px-3 py-2"
-              />
-              <button
-                id="add-student-btn"
-                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              >
-                <i class="fas fa-plus mr-2"></i>Add Student
-              </button>
+              <form method="get" id="student-sort-form" class="flex items-center space-x-2">
+                <input
+                  type="text"
+                  id="student-search"
+                  name="search"
+                  placeholder="Search students by name..."
+                  class="border border-gray-300 rounded px-1 py-0.5 w-20 sm:w-32"
+                  value="{{ request.GET.search|default:'' }}"
+                />
+                <select
+                  name="sort"
+                  id="student-sort"
+                  class="border border-gray-300 rounded px-1 py-0.5 w-32 sm:w-40"
+                  onchange="document.getElementById('student-sort-form').submit()"
+                >
+                  <option value="name_asc" {% if request.GET.sort == 'name_asc' or not request.GET.sort %}selected{% endif %}>Name A-Z</option>
+                  <option value="name_desc" {% if request.GET.sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
+                  <option value="date_desc" {% if request.GET.sort == 'date_desc' %}selected{% endif %}>Date Added Newest First</option>
+                  <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Date Added Oldest First</option>
+                </select>
+                <button
+                  id="add-student-btn"
+                  class="bg-green-500 text-white px-2 py-0.5 rounded hover:bg-green-600"
+                  type="button"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add Student
+                </button>
+              </form>
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
               <div class="overflow-x-auto max-w-full">
                 <table class="w-full">
-                  <thead class="bg-gray-50">
+                <thead class="bg-gray-50">
                     <tr>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden checkbox-cell">
+                        <input type="checkbox" id="select-all-students" aria-label="Select all students" />
+                      </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
@@ -526,7 +545,7 @@
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                        Category
+                        Address
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
@@ -547,7 +566,10 @@
                   </thead>
                   <tbody id="students-table" class="divide-y divide-gray-200">
                     {% for student in students %}
-                    <tr>
+                    <tr class="{% if forloop.counter > 10 %}hidden extra-row{% endif %}">
+                      <td class="px-6 py-4 whitespace-nowrap hidden checkbox-cell">
+                        <input type="checkbox" class="student-checkbox" value="{{ student.id }}" aria-label="Select student {{ student.name }}" />
+                      </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         {{ student.name }}
                       </td>
@@ -555,7 +577,7 @@
                         {{ student.type }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.category }}
+                        {{ student.address }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         {{ student.program }}
@@ -583,17 +605,39 @@
                             Delete
                           </button>
                         </form>
+                        <button type="button" class="select-btn text-blue-600 hover:text-blue-900 ml-2">
+                          Select
+                        </button>
                       </td>
                     </tr>
                     {% empty %}
                     <tr>
-                      <td colspan="6" class="text-center py-4">
+                      <td colspan="7" class="text-center py-4">
                         No students found.
                       </td>
                     </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+              </div>
+                <div class="p-4 flex justify-between items-center">
+                {% if students|length > 10 %}
+                <button
+                  id="view-more-btn"
+                  class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                  type="button"
+                >
+                  View More
+                </button>
+                {% endif %}
+                <button
+                  id="delete-selected-students-btn"
+                  class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 hidden"
+                  type="button"
+                  disabled
+                >
+                  Delete Selected
+                </button>
               </div>
             </div>
           </section>
@@ -866,6 +910,64 @@
                 Select a report type above to generate a report
               </p>
             </div>
+
+            <!-- Students Report Content -->
+            <div id="students-report" class="report-section hidden">
+              <h3 class="text-xl font-semibold mb-4">Student Reports</h3>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for student in students %}
+                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
+                  <div class="flex items-center mb-4">
+                    {% if student.photo %}
+                    <img src="{{ student.photo.url }}" alt="Student Photo" class="w-12 h-12 rounded-full object-cover mr-4">
+                    {% else %}
+                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
+                      <i class="fas fa-user text-gray-400"></i>
+                    </div>
+                    {% endif %}
+                    <div>
+                      <h4 class="font-semibold text-lg">{{ student.name }}</h4>
+                      <p class="text-gray-600 text-sm">{{ student.get_type_display }}</p>
+                    </div>
+                  </div>
+                  <div class="space-y-2 mb-4">
+                    <p class="text-sm"><strong>Program:</strong> {{ student.get_program_display }}</p>
+                    <p class="text-sm"><strong>Level:</strong> {{ student.level }}</p>
+                    <p class="text-sm"><strong>Attendance:</strong> {{ student.attendance_percentage|floatformat:1 }}%</p>
+                    <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
+                  </div>
+                  <div class="flex space-x-2">
+                    <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex-1 text-center">
+                      <i class="fas fa-eye mr-1"></i>View Report
+                    </a>
+                    <a href="{% url 'admin_panel:export_student_report_pdf' student.id %}" class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600">
+                      <i class="fas fa-file-pdf"></i>
+                    </a>
+                    <a href="{% url 'admin_panel:export_student_report_excel' student.id %}" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
+                      <i class="fas fa-file-excel"></i>
+                    </a>
+                  </div>
+                </div>
+                {% empty %}
+                <div class="col-span-full text-center py-8">
+                  <i class="fas fa-graduation-cap text-4xl text-gray-300 mb-4"></i>
+                  <p class="text-gray-500">No students found.</p>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <!-- Employees Report Content -->
+            <div id="employees-report" class="report-section hidden">
+              <h3 class="text-xl font-semibold mb-4">Employee Reports</h3>
+              <p class="text-gray-500 text-center">Employee reports coming soon...</p>
+            </div>
+
+            <!-- Financial Report Content -->
+            <div id="financial-report" class="report-section hidden">
+              <h3 class="text-xl font-semibold mb-4">Financial Reports</h3>
+              <p class="text-gray-500 text-center">Financial reports coming soon...</p>
+            </div>
           </section>
           {% endblock %}
         </main>
@@ -875,74 +977,120 @@
       <!-- Add Student Modal -->
       <div
         id="student-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm"
       >
-        <div class="bg-white rounded-lg p-6 w-96">
+        <div class="bg-white rounded-lg p-6 w-96 z-60">
           <h3 class="text-lg font-semibold mb-4">Add Student</h3>
-          <form id="student-form">
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Name</label>
-              <input
-                type="text"
-                id="student-name"
-                name="student-name"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Type</label>
-              <select
-                id="student-type"
-                name="student-type"
-                class="w-full px-3 py-2 border rounded-lg"
-              >
-                <option value="trainee">Trainee</option>
-                <option value="internee-university">
-                  Internee (University)
-                </option>
-                <option value="internee-highschool">
-                  Internee (High School)
-                </option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Program</label>
-              <select
-                id="student-program"
-                name="student-program"
-                class="w-full px-3 py-2 border rounded-lg"
-              >
-                <option value="iot">IoT</option>
-                <option value="sod">SoD</option>
-              </select>
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Level</label>
-              <input
-                type="text"
-                id="student-level"
-                name="student-level"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="flex justify-end space-x-2">
-              <button
-                type="button"
-                id="cancel-student"
-                class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Add Student
-              </button>
-            </div>
-          </form>
+            <form id="student-form">
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Name</label>
+                <input
+                  type="text"
+                  id="student-name"
+                  name="student-name"
+                  class="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Type</label>
+                <select
+                  id="student-type"
+                  name="student-type"
+                  class="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="trainee">Trainee</option>
+                  <option value="internee-university">
+                    Internee (University)
+                  </option>
+                  <option value="internee-highschool">
+                    Internee (High School)
+                  </option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Program</label>
+                <select
+                  id="student-program"
+                  name="student-program"
+                  class="w-full px-3 py-2 border rounded-lg"
+                >
+                  <option value="iot">IoT</option>
+                  <option value="sod">SoD</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Level</label>
+                <input
+                  type="text"
+                  id="student-level"
+                  name="student-level"
+                  class="w-full px-3 py-2 border rounded-lg"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label class="block text-sm font-medium mb-2">Address</label>
+                <select
+                  id="student-address"
+                  name="student-address"
+                  class="w-full px-3 py-2 border rounded-lg"
+                  required
+                >
+                  <option value="" disabled selected>Select Address</option>
+                  <option value="Bumbogo">Bumbogo</option>
+                  <option value="Gatsata">Gatsata</option>
+                  <option value="Gikomero">Gikomero</option>
+                  <option value="Gisozi">Gisozi</option>
+                  <option value="Jabana">Jabana</option>
+                  <option value="Jali">Jali</option>
+                  <option value="Kacyiru">Kacyiru</option>
+                  <option value="Kimihurura">Kimihurura</option>
+                  <option value="Kimironko">Kimironko</option>
+                  <option value="Kinyinya">Kinyinya</option>
+                  <option value="Ndera">Ndera</option>
+                  <option value="Nduba">Nduba</option>
+                  <option value="Remera">Remera</option>
+                  <option value="Rusororo">Rusororo</option>
+                  <option value="Rutunga">Rutunga</option>
+                  <option value="Gahanga">Gahanga</option>
+                  <option value="Gatenga">Gatenga</option>
+                  <option value="Gikondo">Gikondo</option>
+                  <option value="Kagarama">Kagarama</option>
+                  <option value="Kanombe">Kanombe</option>
+                  <option value="Kicukiro">Kicukiro</option>
+                  <option value="Kigarama">Kigarama</option>
+                  <option value="Masaka">Masaka</option>
+                  <option value="Niboye">Niboye</option>
+                  <option value="Nyarugunga">Nyarugunga</option>
+                  <option value="Gitega">Gitega</option>
+                  <option value="Kanyinya">Kanyinya</option>
+                  <option value="Kigali">Kigali</option>
+                  <option value="Kimisagara">Kimisagara</option>
+                  <option value="Mageragere">Mageragere</option>
+                  <option value="Muhima">Muhima</option>
+                  <option value="Nyakabanda">Nyakabanda</option>
+                  <option value="Nyamirambo">Nyamirambo</option>
+                  <option value="Nyarugenge">Nyarugenge</option>
+                  <option value="Rwezamenyo">Rwezamenyo</option>
+                </select>
+              </div>
+              <div class="flex justify-end space-x-2">
+                <button
+                  type="button"
+                  id="cancel-student"
+                  class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                >
+                  Add Student
+                </button>
+              </div>
+            </form>
         </div>
       </div>
 
@@ -1015,6 +1163,47 @@
 
       <script src="{% static 'script.js' %}"></script>
       <script src="{% static 'ui-interactions.js' %}"></script>
+      <script>
+        document.addEventListener("DOMContentLoaded", function () {
+          // View More button toggle
+          const viewMoreBtn = document.getElementById("view-more-btn");
+          if (viewMoreBtn) {
+            viewMoreBtn.addEventListener("click", function () {
+              const extraRows = document.querySelectorAll(".extra-row");
+              extraRows.forEach((row) => {
+                if (row.classList.contains("hidden")) {
+                  row.classList.remove("hidden");
+                  viewMoreBtn.textContent = "View Less";
+                } else {
+                  row.classList.add("hidden");
+                  viewMoreBtn.textContent = "View More";
+                  // Scroll to the table top when collapsing
+                  document.getElementById("students-table").scrollIntoView({ behavior: "smooth" });
+                }
+              });
+            });
+          }
+
+          // Add Student button opens modal
+          const addStudentBtn = document.getElementById("add-student-btn");
+          const studentModal = document.getElementById("student-modal");
+          const cancelStudentBtn = document.getElementById("cancel-student");
+
+          if (addStudentBtn && studentModal) {
+            addStudentBtn.addEventListener("click", function () {
+              studentModal.classList.remove("hidden");
+              studentModal.classList.add("flex");
+            });
+          }
+
+          if (cancelStudentBtn && studentModal) {
+            cancelStudentBtn.addEventListener("click", function () {
+              studentModal.classList.add("hidden");
+              studentModal.classList.remove("flex");
+            });
+          }
+        });
+      </script>
       {% csrf_token %}
     </div>
   </body>

@@ -116,6 +116,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .trim()
           .toLowerCase()
           .replace(/\s/g, "-");
+        studentForm["student-address"].value = row.children[2].textContent.trim();
         studentForm["student-program"].value = row.children[3].textContent
           .trim()
           .toLowerCase();
@@ -164,12 +165,8 @@ document.addEventListener("DOMContentLoaded", function () {
             newRow.innerHTML = `
               <td class="px-6 py-4 whitespace-nowrap">${data.student.name}</td>
               <td class="px-6 py-4 whitespace-nowrap">${data.student.type}</td>
-              <td class="px-6 py-4 whitespace-nowrap">${
-                data.student.category
-              }</td>
-              <td class="px-6 py-4 whitespace-nowrap">${
-                data.student.program
-              }</td>
+              <td class="px-6 py-4 whitespace-nowrap">${data.student.address}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${data.student.program}</td>
               <td class="px-6 py-4 whitespace-nowrap">${data.student.level}</td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <a href="/update-student/${
@@ -195,11 +192,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 `a[href='/update-student/${studentId}/']`
               );
               if (editLink) {
-                row.children[0].textContent = data.student.name;
-                row.children[1].textContent = data.student.type;
-                row.children[2].textContent = data.student.category;
-                row.children[3].textContent = data.student.program;
-                row.children[4].textContent = data.student.level;
+              row.children[0].textContent = data.student.name;
+              row.children[1].textContent = data.student.type;
+              row.children[2].textContent = data.student.address;
+              row.children[3].textContent = data.student.program;
+              row.children[4].textContent = data.student.level;
               }
             });
           }

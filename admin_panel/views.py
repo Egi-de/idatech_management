@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
 from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry
 from django.contrib.auth.decorators import login_required
@@ -11,6 +11,12 @@ from django.utils import timezone
 from django.core.serializers import serialize
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.fields import GenericForeignKey
+from django.template.loader import render_to_string
+import io
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import letter
+import openpyxl
+from django.core.mail import EmailMessage
 
 @login_required
 def dashboard(request):
@@ -67,7 +73,18 @@ def dashboard(request):
     user_list = RecentActivity.objects.values_list('user__username', flat=True).distinct().order_by('user__username')
 
     # Fetch all students, employees, expenses for rendering
-    students = Student.objects.all()
+    sort = request.GET.get('sort', 'name_asc')
+    if sort == 'name_asc':
+        students = Student.objects.all().order_by('name')
+    elif sort == 'name_desc':
+        students = Student.objects.all().order_by('-name')
+    elif sort == 'date_asc':
+        students = Student.objects.all().order_by('enrollment_date')
+    elif sort == 'date_desc':
+        students = Student.objects.all().order_by('-enrollment_date')
+    else:
+        students = Student.objects.all().order_by('name')
+
     employees = Employee.objects.all()
     expenses = Expense.objects.all()
 
@@ -111,6 +128,98 @@ def dashboard(request):
     return render(request, 'admin_panel/index.html', context)
 
 @login_required
+def student_report_detail(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    return render(request, 'admin_panel/student_report_detail.html', {'student': student})
+
+@login_required
+def export_student_report_pdf(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    y = height - 50
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, y, f"Student Report: {student.name}")
+    y -= 30
+
+    p.setFont("Helvetica", 12)
+    p.drawString(50, y, f"Student ID: {student.student_id}")
+    y -= 20
+    p.drawString(50, y, f"Email: {student.email}")
+    y -= 20
+    p.drawString(50, y, f"Phone: {student.phone}")
+    y -= 20
+    p.drawString(50, y, f"Address: {student.address}")
+    y -= 30
+
+    # Add more fields as needed...
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{student.name}_report.pdf"'
+    return response
+
+@login_required
+def export_student_report_excel(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Student Report"
+
+    ws.append(["Field", "Value"])
+    ws.append(["Name", student.name])
+    ws.append(["Student ID", student.student_id])
+    ws.append(["Email", student.email])
+    ws.append(["Phone", student.phone])
+    ws.append(["Address", student.address])
+    ws.append(["Enrollment Date", student.enrollment_date.strftime("%Y-%m-%d")])
+    ws.append(["Type", student.get_type_display()])
+    ws.append(["Category", student.category])
+    ws.append(["Program", student.get_program_display()])
+    ws.append(["Level", student.level])
+    ws.append(["Total Sessions", student.total_sessions])
+    ws.append(["Attended Sessions", student.attended_sessions])
+    ws.append(["Absences", student.absences])
+    ws.append(["Participation Score", float(student.participation_score)])
+    ws.append(["Average Scores", float(student.avg_scores)])
+    ws.append(["Project Completion Rate", float(student.project_completion_rate)])
+    ws.append(["Certifications", student.certifications])
+    ws.append(["Hackathons Attended", student.hackathons_attended])
+    ws.append(["Awards", student.awards])
+    ws.append(["Contributions", student.contributions])
+    ws.append(["Mentor Comments", student.mentor_comments])
+    ws.append(["Peer Reviews", student.peer_reviews])
+    ws.append(["Strengths", student.strengths])
+    ws.append(["Areas for Improvement", student.areas_for_improvement])
+    ws.append(["Current Status", student.get_current_status_display()])
+    ws.append(["Next Steps", student.next_steps])
+    ws.append(["Graduation Eligibility", "Yes" if student.graduation_eligibility else "No"])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{student.name}_report.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required
+def email_student_report(request, student_id):
+    student = get_object_or_404(Student, id=student_id)
+    if request.method == 'POST':
+        recipient_email = request.POST.get('email')
+        if recipient_email:
+            subject = f"Student Report: {student.name}"
+            message = render_to_string('admin_panel/email_student_report.html', {'student': student})
+            email = EmailMessage(subject, message, to=[recipient_email])
+            email.content_subtype = "html"
+            email.send()
+            return JsonResponse({'success': True, 'message': 'Email sent successfully'})
+        return JsonResponse({'success': False, 'message': 'Recipient email is required'})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@login_required
 def delete_recent_activity(request, activity_id):
     if request.method == 'POST':
         activity = get_object_or_404(RecentActivity, id=activity_id)
@@ -132,19 +241,28 @@ def delete_recent_activity(request, activity_id):
         return redirect('admin_panel:dashboard')
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
+import uuid
+
 @require_POST
 @login_required
 def add_student(request):
+    def generate_unique_student_id():
+        return str(uuid.uuid4())[:8]  # Short unique ID
+
     name = request.POST.get('student-name')
     type_ = request.POST.get('student-type')
     program = request.POST.get('student-program')
     level = request.POST.get('student-level')
-    if name and type_ and program and level:
+    address = request.POST.get('student-address')
+    if name and type_ and program and level and address:
+        student_id = generate_unique_student_id()
         student = Student.objects.create(
             name=name,
+            student_id=student_id,
             type=type_,
             program=program,
             level=level,
+            address=address,
         )
         # Create recent activity
         RecentActivity.objects.create(
@@ -159,14 +277,15 @@ def add_student(request):
             sod_students = Student.objects.filter(program='sod').count()
             return JsonResponse({
                 'success': True,
-                'student': {
-                    'id': student.id,
-                    'name': student.name,
-                    'type': student.get_type_display(),
-                    'category': student.category,
-                    'program': student.get_program_display(),
-                    'level': student.level,
-                },
+            'student': {
+                'id': student.id,
+                'name': student.name,
+                'type': student.get_type_display(),
+                'category': student.category,
+                'address': student.address,
+                'program': student.get_program_display(),
+                'level': student.level,
+            },
                 'counts': {
                     'total_students': total_students,
                     'iot_students': iot_students,
@@ -231,6 +350,7 @@ def update_student(request, student_id):
         student.type = request.POST.get('student-type')
         student.program = request.POST.get('student-program')
         student.level = request.POST.get('student-level')
+        student.address = request.POST.get('student-address')
         student.save()
         # Create recent activity
         RecentActivity.objects.create(
@@ -246,6 +366,7 @@ def update_student(request, student_id):
                     'name': student.name,
                     'type': student.get_type_display(),
                     'category': student.category,
+                    'address': student.address,
                     'program': student.get_program_display(),
                     'level': student.level,
                 }
@@ -275,6 +396,47 @@ def delete_student(request, student_id):
         return redirect('admin_panel:dashboard')
     context = {'student': student}
     return render(request, 'admin_panel/delete_student.html', context)
+
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt
+@require_POST
+@login_required
+def bulk_delete_students(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            student_ids = data.get('student_ids', [])
+            if not student_ids:
+                return JsonResponse({'success': False, 'error': 'No student IDs provided'})
+
+            students = Student.objects.filter(id__in=student_ids)
+            deleted_count = 0
+            for student in students:
+                # Save to TrashBinEntry before deleting
+                TrashBinEntry.objects.create(
+                    user=request.user,
+                    item_type='Student',
+                    item_id=student.id,
+                    item_data=json.loads(serialize('json', [student]))[0]['fields'],
+                    deleted_at=timezone.now()
+                )
+                deleted_count += 1
+
+            # Bulk delete
+            students.delete()
+
+            # Create recent activity
+            RecentActivity.objects.create(
+                user=request.user,
+                action=f"Bulk deleted {deleted_count} students",
+                icon_class="fas fa-trash text-red-500"
+            )
+
+            return JsonResponse({'success': True, 'deleted_count': deleted_count})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
 def update_employee(request, employee_id):
