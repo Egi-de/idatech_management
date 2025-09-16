@@ -142,79 +142,79 @@
           <nav class="flex flex-col flex-grow overflow-y-auto">
             <ul class="flex flex-col flex-grow space-y-1 p-2">
               <li>
-                <a
-                  href="/?section=overview"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/' or request.GET.section == 'overview' or not request.GET.section %}active{% endif %}"
-                  data-section="overview"
-                  title="Dashboard"
-                >
-                  <i
-                    class="fas fa-tachometer-alt w-5 mr-3 {% if request.GET.section == 'overview' or not request.GET.section %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="/?section=overview"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/' or request.GET.section == 'overview' or not request.GET.section %}bg-blue-100{% endif %}"
+  data-section="overview"
+  title="Dashboard"
+>
+<i
+  class="fas fa-tachometer-alt w-5 mr-3 text-blue-600"
+></i>
                   <span>Dashboard</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="/?section=students"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/students/' or request.GET.section == 'students' %}active{% endif %}"
-                  data-section="students"
-                  title="Students"
-                >
-                  <i
-                    class="fas fa-graduation-cap w-5 mr-3 {% if request.GET.section == 'students' %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="/?section=students"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/students/' or request.GET.section == 'students' %}bg-blue-100{% endif %}"
+  data-section="students"
+  title="Students"
+>
+<i
+  class="fas fa-graduation-cap w-5 mr-3 text-blue-600"
+></i>
                   <span>Students</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="/?section=employees"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/employees/' or request.GET.section == 'employees' %}active{% endif %}"
-                  data-section="employees"
-                  title="Employees"
-                >
-                  <i
-                    class="fas fa-users w-5 mr-3 {% if request.GET.section == 'employees' %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="/?section=employees"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/employees/' or request.GET.section == 'employees' %}bg-blue-100{% endif %}"
+  data-section="employees"
+  title="Employees"
+>
+<i
+  class="fas fa-users w-5 mr-3 text-blue-600"
+></i>
                   <span>Employees</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="/?section=financial"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/financial/' or request.GET.section == 'financial' %}active{% endif %}"
-                  data-section="financial"
-                  title="Financial"
-                >
-                  <i
-                    class="fas fa-dollar-sign w-5 mr-3 {% if request.GET.section == 'financial' %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="/?section=financial"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/financial/' or request.GET.section == 'financial' %}bg-blue-100{% endif %}"
+  data-section="financial"
+  title="Financial"
+>
+<i
+  class="fas fa-dollar-sign w-5 mr-3 text-blue-600"
+></i>
                   <span>Financial</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="/?section=reports"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/reports/' or request.GET.section == 'reports' %}active{% endif %}"
-                  data-section="reports"
-                  title="Reports"
-                >
-                  <i
-                    class="fas fa-chart-bar w-5 mr-3 {% if request.GET.section == 'reports' %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="/?section=reports"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.path == '/reports/' or request.GET.section == 'reports' %}bg-blue-100{% endif %}"
+  data-section="reports"
+  title="Reports"
+>
+<i
+  class="fas fa-chart-bar w-5 mr-3 text-blue-600"
+></i>
                   <span>Reports</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="{% url 'auth:settings' %}"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.resolver_match.url_name == 'settings' %}active{% endif %}"
-                  title="Settings"
-                >
-                  <i
-                    class="fas fa-cog w-5 mr-3 {% if request.resolver_match.url_name == 'settings' %}text-white{% else %}text-blue-600{% endif %}"
-                  ></i>
+<a
+  href="{% url 'auth:settings' %}"
+  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition {% if request.resolver_match.url_name == 'settings' %}bg-blue-100{% endif %}"
+  title="Settings"
+>
+<i
+  class="fas fa-cog w-5 mr-3 text-blue-600"
+></i>
                   <span>Settings</span>
                 </a>
               </li>

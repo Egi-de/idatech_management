@@ -1,0 +1,223 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Report: {{ student.name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'styles.css' %}">
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div class="max-w-5xl mx-auto p-6">
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0">
+                <h1 class="text-4xl font-extrabold text-gray-900">Student Report</h1>
+                <div class="flex space-x-4">
+                    <a href="{% url 'admin_panel:export_student_report_pdf' student.id %}" class="flex items-center bg-red-600 text-white px-5 py-3 rounded-lg shadow hover:bg-red-700 transition">
+                        <i class="fas fa-file-pdf mr-3 text-lg"></i> PDF
+                    </a>
+                    <a href="{% url 'admin_panel:export_student_report_excel' student.id %}" class="flex items-center bg-green-600 text-white px-5 py-3 rounded-lg shadow hover:bg-green-700 transition">
+                        <i class="fas fa-file-excel mr-3 text-lg"></i> Excel
+                    </a>
+                    <button onclick="openEmailModal()" class="flex items-center bg-blue-600 text-white px-5 py-3 rounded-lg shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-envelope mr-3 text-lg"></i> Email
+                    </button>
+                </div>
+            </div>
+
+            <!-- 1. Student Profile -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Student Profile</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <p><strong>Full Name:</strong> {{ student.name }}</p>
+                        <p><strong>Student ID:</strong> {{ student.student_id|default:"N/A" }}</p>
+                        <p><strong>Email:</strong> {{ student.email|default:"N/A" }}</p>
+                        <p><strong>Phone:</strong> {{ student.phone|default:"N/A" }}</p>
+                        <p><strong>Address:</strong> {{ student.address|default:"N/A" }}</p>
+                        <p><strong>Enrollment Date:</strong> {{ student.enrollment_date|date:"M d, Y" }}</p>
+                    </div>
+                    <div>
+                        {% if student.photo %}
+                        <img src="{{ student.photo.url }}" alt="Student Photo" class="w-32 h-32 object-cover rounded-lg">
+                        {% else %}
+                        <div class="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-user text-gray-400 text-4xl"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Enrollment Details -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Enrollment Details</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Type:</strong> {{ student.get_type_display }}</p>
+                    <p><strong>Category:</strong> {{ student.category|default:"N/A" }}</p>
+                    <p><strong>Program:</strong> {{ student.get_program_display }}</p>
+                    <p><strong>Level:</strong> {{ student.level }}</p>
+                </div>
+            </section>
+
+            <!-- 3. Attendance & Participation -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Attendance & Participation</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Total Sessions:</strong> {{ student.total_sessions }}</p>
+                    <p><strong>Sessions Attended:</strong> {{ student.attended_sessions }}</p>
+                    <p><strong>Attendance Percentage:</strong> {{ student.attendance_percentage|floatformat:1 }}%</p>
+                    <p><strong>Absences:</strong> {{ student.absences }}</p>
+                    <p><strong>Participation Score:</strong> {{ student.participation_score }}</p>
+                </div>
+            </section>
+
+            <!-- 4. Performance / Grades -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Performance / Grades</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Average Scores:</strong> {{ student.avg_scores }}</p>
+                    <p><strong>Project Completion Rate:</strong> {{ student.project_completion_rate }}%</p>
+                    <p><strong>Certifications:</strong> {{ student.certifications|default:"None" }}</p>
+                </div>
+                {% if student.progress_graph_data %}
+                <div class="mt-4">
+                    <h3 class="text-lg font-semibold mb-2">Progress Graph</h3>
+                    <p>Progress data available but chart not implemented yet.</p>
+                </div>
+                {% endif %}
+            </section>
+
+            <!-- 5. Activities & Achievements -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Activities & Achievements</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <h3 class="font-semibold">Hackathons Attended</h3>
+                        <p>{{ student.hackathons_attended|default:"None" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Awards</h3>
+                        <p>{{ student.awards|default:"None" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Contributions</h3>
+                        <p>{{ student.contributions|default:"None" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 6. Feedback & Evaluation -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Feedback & Evaluation</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <h3 class="font-semibold">Mentor Comments</h3>
+                        <p>{{ student.mentor_comments|default:"No comments" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Peer Reviews</h3>
+                        <p>{{ student.peer_reviews|default:"No reviews" }}</p>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold">Strengths & Areas for Improvement</h3>
+                        <p><strong>Strengths:</strong> {{ student.strengths|default:"N/A" }}</p>
+                        <p><strong>Areas for Improvement:</strong> {{ student.areas_for_improvement|default:"N/A" }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 7. Status & Recommendations -->
+            <section class="mb-8">
+<h2 class="text-2xl font-semibold mb-4 text-blue-600">Status & Recommendations</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p><strong>Current Status:</strong> {{ student.get_current_status_display }}</p>
+                    <p><strong>Next Steps:</strong> {{ student.next_steps|default:"N/A" }}</p>
+                    <p><strong>Graduation Eligibility:</strong> {% if student.graduation_eligibility %}Yes{% else %}No{% endif %}</p>
+                </div>
+            </section>
+
+            <!-- Back Button -->
+            <div class="mt-8">
+                <a href="{% url 'admin_panel:dashboard' %}?section=reports" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div id="emailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-6 w-96">
+            <h3 class="text-lg font-semibold mb-4">Email Student Report</h3>
+            <form id="emailForm">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-sm font-medium mb-2">Recipient Email</label>
+                    <input type="email" id="recipientEmail" name="email" class="w-full px-3 py-2 border rounded-lg" required>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeEmailModal()" class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50">Cancel</button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Send</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function openEmailModal() {
+            document.getElementById('emailModal').classList.remove('hidden');
+            document.getElementById('emailModal').classList.add('flex');
+        }
+
+        function closeEmailModal() {
+            document.getElementById('emailModal').classList.add('hidden');
+            document.getElementById('emailModal').classList.remove('flex');
+        }
+
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('recipientEmail').value;
+            fetch('/admin_panel/email-student-report/{{ student.id }}/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: 'email=' + encodeURIComponent(email)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Email sent successfully!');
+                    closeEmailModal();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        });
+
+        {% if student.progress_graph_data %}
+        const ctx = document.getElementById('progressChart').getContext('2d');
+        const progressData = {{ student.progress_graph_data|safe }};
+        const labels = progressData.map(item => item.date);
+        const scores = progressData.map(item => item.score);
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Progress Score',
+                    data: scores,
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            }
+        });
+        {% endif %}
+    </script>
+</body>
+</html>
