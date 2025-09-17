@@ -1,3 +1,5 @@
+# admin_panel/views.py
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
@@ -17,6 +19,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import openpyxl
 from django.core.mail import EmailMessage
+from django.contrib import messages
 
 @login_required
 def dashboard(request):
@@ -29,103 +32,47 @@ def dashboard(request):
     # Financial summaries
     total_salaries = Employee.objects.aggregate(Sum('salary'))['salary__sum'] or 0
     transport_expenses = Expense.objects.filter(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
-    other_expenses = Expense.objects.filter(type=Expense.OTHER).aggregate(Sum('amount'))['amount__sum'] or 0
-    total_expenses = total_salaries + transport_expenses + other_expenses
+    other_expenses = Expense.objects.exclude(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = transport_expenses + other_expenses
+    total_revenue = Transaction.objects.aggregate(Sum('amount'))['amount__sum'] or 0
+    net_profit = total_revenue - total_expenses - total_salaries
 
-    # Recent transactions (last 5)
-    recent_transactions = Transaction.objects.order_by('-date')[:5]
+    # Student filtering logic
+    students_queryset = Student.objects.all().order_by('name')
+    active_students_count = Student.objects.filter(current_status='active').count()
 
-    # Filtering and sorting for recent activities
-    recent_activities_qs = RecentActivity.objects.all()
+    section = request.GET.get('section', 'dashboard')
+    type_filter = request.GET.get('type')
+    program_filter = request.GET.get('program')
 
-    # Filtering by user
-    user_filter = request.GET.get('user')
-    if user_filter:
-        recent_activities_qs = recent_activities_qs.filter(user__username__icontains=user_filter)
-
-    # Filtering by action text search
-    action_search = request.GET.get('action_search')
-    if action_search:
-        recent_activities_qs = recent_activities_qs.filter(action__icontains=action_search)
-
-    # Filtering by date range
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
-    if start_date and end_date:
-        recent_activities_qs = recent_activities_qs.filter(timestamp__date__range=[start_date, end_date])
-
-    # Sorting
-    sort_by = request.GET.get('sort_by', 'timestamp_desc')
-    if sort_by == 'timestamp_asc':
-        recent_activities_qs = recent_activities_qs.order_by('timestamp')
-    elif sort_by == 'action_asc':
-        recent_activities_qs = recent_activities_qs.order_by('action')
-    elif sort_by == 'action_desc':
-        recent_activities_qs = recent_activities_qs.order_by('-action')
-    else:
-        # Default to timestamp descending
-        recent_activities_qs = recent_activities_qs.order_by('-timestamp')
-
-    # Limit to 20 for performance
-    recent_activities = recent_activities_qs[:20]
-
-    # Populate user filter dropdown with distinct usernames
-    user_list = RecentActivity.objects.values_list('user__username', flat=True).distinct().order_by('user__username')
-
-    # Fetch all students, employees, expenses for rendering
-    sort = request.GET.get('sort', 'name_asc')
-    if sort == 'name_asc':
-        students = Student.objects.all().order_by('name')
-    elif sort == 'name_desc':
-        students = Student.objects.all().order_by('-name')
-    elif sort == 'date_asc':
-        students = Student.objects.all().order_by('enrollment_date')
-    elif sort == 'date_desc':
-        students = Student.objects.all().order_by('-enrollment_date')
-    else:
-        students = Student.objects.all().order_by('name')
-
-    employees = Employee.objects.all()
-    expenses = Expense.objects.all()
-
-    # Get or create profile for logged-in user
-    profile, created = Profile.objects.get_or_create(user=request.user)
+    if section == 'students':
+        if type_filter == 'trainee':
+            students_queryset = students_queryset.filter(type='trainee')
+        elif type_filter == 'internee':
+            # Filter for both university and high school internees
+            students_queryset = students_queryset.filter(type__startswith='internee')
+        elif program_filter == 'iot':
+            students_queryset = students_queryset.filter(program='iot')
+        elif program_filter == 'sod':
+            students_queryset = students_queryset.filter(program='sod')
 
     context = {
         'total_students': total_students,
+        'active_students_count': active_students_count,
         'total_employees': total_employees,
         'iot_students': iot_students,
         'sod_students': sod_students,
-        'total_salaries': total_salaries,
-        'transport_expenses': transport_expenses,
-        'other_expenses': other_expenses,
+        'total_revenue': total_revenue,
         'total_expenses': total_expenses,
-        'recent_transactions': recent_transactions,
-        'recent_activities': recent_activities,
-        'students': students,
-        'employees': employees,
-        'expenses': expenses,
-        'profile': profile,
-        'user_list': user_list,
+        'net_profit': net_profit,
+        'students': students_queryset,
+        'section': section,
+        'current_filter': type_filter or program_filter or 'all'
     }
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        # Return JSON for AJAX GET requests (for filtering/sorting)
-        if request.method == 'GET':
-            activities = []
-            for activity in recent_activities:
-                activities.append({
-                    'id': activity.id,
-                    'action': activity.action,
-                    'icon_class': activity.icon_class,
-                    'timestamp': activity.timestamp.isoformat(),
-                    'user': activity.user.username,
-                })
-            return JsonResponse({'activities': activities})
-        # Return only the recent activities partial HTML for AJAX POST requests (legacy, if any)
-        return render(request, 'admin_panel/recent_activities_partial.html', context)
-
     return render(request, 'admin_panel/index.html', context)
+
+# ... (rest of the file remains the same)
 
 @login_required
 def student_report_detail(request, student_id):
@@ -243,56 +190,53 @@ def delete_recent_activity(request, activity_id):
 
 import uuid
 
-@require_POST
 @login_required
 def add_student(request):
-    def generate_unique_student_id():
-        return str(uuid.uuid4())[:8]  # Short unique ID
+    if request.method == 'POST':
+        # Create a new Student instance from the form data
+        try:
+            student = Student.objects.create(
+                name=request.POST.get('name'),
+                student_id=request.POST.get('student_id'),
+                email=request.POST.get('email', ''),
+                phone=request.POST.get('phone', ''),
+                address=request.POST.get('address', ''),
+                enrollment_date=request.POST.get('enrollment_date'),
+                program=request.POST.get('program'),
+                type=request.POST.get('type'),
+                level=request.POST.get('level'),
+                current_status=request.POST.get('current_status', 'active'),
+                mentor_comments=request.POST.get('mentor_comments', ''),
+                next_steps=request.POST.get('next_steps', ''),
+                areas_for_improvement=request.POST.get('areas_for_improvement', ''),
+                strengths=request.POST.get('strengths', ''),
+                awards=request.POST.get('awards', ''),
+                certifications=request.POST.get('certifications', ''),
+                hackathons_attended=request.POST.get('hackathons_attended', 0),
+                attended_sessions=request.POST.get('attended_sessions', 0),
+                total_sessions=request.POST.get('total_sessions', 0),
+                avg_scores=request.POST.get('avg_scores', 0),
+                participation_score=request.POST.get('participation_score', 0),
+                project_completion_rate=request.POST.get('project_completion_rate', 0),
+                absences=request.POST.get('absences', 0),
+                contributions=request.POST.get('contributions', ''),
+                peer_reviews=request.POST.get('peer_reviews', ''),
+                graduation_eligibility=request.POST.get('graduation_eligibility', 'False').lower() == 'true',
+                progress_graph_data='[]' # Default value
+            )
+            messages.success(request, f"Successfully added {student.name}.")
+            return redirect('admin_panel:dashboard')
+        except Exception as e:
+            messages.error(request, f"Error adding student: {e}")
+            return redirect('admin_panel:add_student')
 
-    name = request.POST.get('student-name')
-    type_ = request.POST.get('student-type')
-    program = request.POST.get('student-program')
-    level = request.POST.get('student-level')
-    address = request.POST.get('student-address')
-    if name and type_ and program and level and address:
-        student_id = generate_unique_student_id()
-        student = Student.objects.create(
-            name=name,
-            student_id=student_id,
-            type=type_,
-            program=program,
-            level=level,
-            address=address,
-        )
-        # Create recent activity
-        RecentActivity.objects.create(
-            user=request.user,
-            action=f"New trainee {student.name} added to {student.get_program_display()} program",
-            icon_class="fas fa-plus-circle text-green-500"
-        )
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # AJAX request
-            total_students = Student.objects.count()
-            iot_students = Student.objects.filter(program='iot').count()
-            sod_students = Student.objects.filter(program='sod').count()
-            return JsonResponse({
-                'success': True,
-            'student': {
-                'id': student.id,
-                'name': student.name,
-                'type': student.get_type_display(),
-                'category': student.category,
-                'address': student.address,
-                'program': student.get_program_display(),
-                'level': student.level,
-            },
-                'counts': {
-                    'total_students': total_students,
-                    'iot_students': iot_students,
-                    'sod_students': sod_students,
-                }
-            })
-    return redirect('admin_panel:dashboard')
+    # For GET request, render the form
+    context = {
+        'student_types': Student.TYPE_CHOICES,
+        'student_programs': Student.PROGRAM_CHOICES,
+        'student_statuses': Student.STATUS_CHOICES
+    }
+    return render(request, 'admin_panel/add_student.html', context)
 
 @require_POST
 @login_required

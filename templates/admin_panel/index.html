@@ -1,1210 +1,238 @@
+{% extends "admin_panel/base.html" %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IDA Tech Management</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="{% static 'styles.css' %}" />
-  </head>
-  <body class="bg-gray-50 min-h-screen">
-    <!-- Toast Notifications -->
-    <div
-      aria-live="assertive"
-      class="fixed inset-0 flex items-end px-4 py-6 pointer-events-none sm:p-6 sm:items-start z-50"
-    >
-      <div
-        id="toast-container"
-        class="w-full flex flex-col items-center space-y-4 sm:items-end"
-      >
-        {% if messages %} {% for message in messages %}
-        <div
-          class="max-w-sm w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 overflow-hidden toast"
-          role="alert"
-          data-message-level="{{ message.level }}"
-        >
-          <div class="p-4">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                {% if message.level == 40 %}
-                <svg
-                  class="h-6 w-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-                {% elif message.level == 25 %}
-                <svg
-                  class="h-6 w-6 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-                {% else %}
-                <svg
-                  class="h-6 w-6 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    fill="none"
-                  />
-                </svg>
-                {% endif %}
-              </div>
-              <div class="ml-3 w-0 flex-1 pt-0.5">
-                <p class="text-sm font-medium text-gray-900">{{ message }}</p>
-              </div>
-              <div class="ml-4 flex-shrink-0 flex">
-                <button
-                  type="button"
-                  class="inline-flex text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  onclick="this.closest('.toast').remove()"
-                >
-                  <span class="sr-only">Close</span>
-                  <svg
-                    class="h-5 w-5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                    aria-hidden="true"
-                  >
-                    <path
-                      fill-rule="evenodd"
-                      d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                      clip-rule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
+
+{% block content %}
+<div class="p-6">
+  <h1 class="text-4xl font-bold text-gray-900 mb-6">Dashboard</h1>
+
+  <div id="dashboard-section" class="section {% if request.GET.section and request.GET.section != 'dashboard' %}hidden{% endif %}">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-gray-500 text-sm font-medium uppercase leading-tight">Total Students</h3>
+          <p class="text-3xl font-bold text-gray-900">{{ total_students }}</p>
         </div>
-        {% endfor %} {% endif %}
+        <div class="text-blue-500 bg-blue-100 p-3 rounded-full">
+          <i class="fas fa-users fa-2x"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-gray-500 text-sm font-medium uppercase leading-tight">Total Employees</h3>
+          <p class="text-3xl font-bold text-gray-900">{{ total_employees }}</p>
+        </div>
+        <div class="text-purple-500 bg-purple-100 p-3 rounded-full">
+          <i class="fas fa-user-tie fa-2x"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-gray-500 text-sm font-medium uppercase leading-tight">Total Revenue</h3>
+          <p class="text-3xl font-bold text-gray-900">${{ total_revenue|floatformat:2 }}</p>
+        </div>
+        <div class="text-green-500 bg-green-100 p-3 rounded-full">
+          <i class="fas fa-dollar-sign fa-2x"></i>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-lg shadow-md p-6 flex items-center justify-between">
+        <div>
+          <h3 class="text-gray-500 text-sm font-medium uppercase leading-tight">Net Profit</h3>
+          <p class="text-3xl font-bold text-gray-900">${{ net_profit|floatformat:2 }}</p>
+        </div>
+        <div class="text-red-500 bg-red-100 p-3 rounded-full">
+          <i class="fas fa-chart-line fa-2x"></i>
+        </div>
       </div>
     </div>
 
-    <script>
-      // Auto dismiss toast notifications after 5 seconds
-      document.addEventListener("DOMContentLoaded", () => {
-        const toasts = document.querySelectorAll(".toast");
-        toasts.forEach((toast) => {
-          setTimeout(() => {
-            toast.remove();
-          }, 5000);
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Recent Activities</h2>
+      <div id="recent-activities-content">
+        </div>
+    </div>
+  </div>
+
+  <div id="students-section" class="section {% if request.GET.section != 'students' %}hidden{% endif %}">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-3xl font-bold text-gray-800">Students</h2>
+      <a href="{% url 'admin_panel:add_student' %}"
+        id="add-student-btn"
+        class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition"
+      >
+        <i class="fas fa-user-plus mr-2"></i> Add Student
+      </a>
+    </div>
+
+    <div class="flex space-x-2 mb-4">
+      <a href="{% url 'admin_panel:dashboard' %}?section=students"
+        class="px-4 py-2 rounded-md transition {% if not request.GET.type and not request.GET.program %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+      >All ({{ total_students }})</a>
+      <a href="{% url 'admin_panel:dashboard' %}?section=students&type=trainee"
+        class="px-4 py-2 rounded-md transition {% if request.GET.type == 'trainee' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+      >Trainees</a>
+      <a href="{% url 'admin_panel:dashboard' %}?section=students&type=internee"
+        class="px-4 py-2 rounded-md transition {% if request.GET.type == 'internee' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+      >Internees</a>
+      <a href="{% url 'admin_panel:dashboard' %}?section=students&program=iot"
+        class="px-4 py-2 rounded-md transition {% if request.GET.program == 'iot' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+      >IoT ({{ iot_students }})</a>
+      <a href="{% url 'admin_panel:dashboard' %}?section=students&program=sod"
+        class="px-4 py-2 rounded-md transition {% if request.GET.program == 'sod' %}bg-blue-600 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+      >SoD ({{ sod_students }})</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+      <div class="overflow-x-auto">
+        <table id="students-table" class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Student ID
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Program
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Status
+              </th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Actions
+              </th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            {% for student in students %}
+            <tr>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    <img class="h-10 w-10 rounded-full" src="https://via.placeholder.com/150" alt="" />
+                  </div>
+                  <div class="ml-4">
+                    <div class="text-sm font-medium text-gray-900">{{ student.name }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.student_id }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.get_type_display }}</td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.get_program_display }}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                  {% if student.current_status == 'active' %}bg-green-100 text-green-800
+                  {% elif student.current_status == 'on_hold' %}bg-yellow-100 text-yellow-800
+                  {% elif student.current_status == 'dropped' %}bg-red-100 text-red-800
+                  {% else %}bg-gray-100 text-gray-800{% endif %}">
+                  {{ student.get_current_status_display }}
+                </span>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="text-indigo-600 hover:text-indigo-900 mr-2" title="View Report">
+                  <i class="fas fa-file-alt"></i>
+                </a>
+                <a href="#" class="text-blue-600 hover:text-blue-900 mr-2" title="Edit">
+                  <i class="fas fa-edit"></i>
+                </a>
+                <a href="#" class="text-red-600 hover:text-red-900" title="Delete">
+                  <i class="fas fa-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% empty %}
+            <tr>
+              <td colspan="6" class="px-6 py-4 text-center text-gray-500">No students found.</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const navButtons = document.querySelectorAll(".nav-btn");
+
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.startsWith(name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    function getRecentActivities() {
+      fetch("{% url 'admin_panel:get_recent_activities' %}", {
+          method: "GET",
+          headers: {
+            "X-CSRFToken": getCookie("csrftoken"),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+        })
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.text();
+        })
+        .then((html) => {
+          document.getElementById('recent-activities-content').innerHTML = html;
+        })
+        .catch((error) => {
+          console.error("Error fetching recent activities:", error);
+          document.getElementById('recent-activities-content').innerHTML = "<p class='text-red-500'>Failed to load recent activities.</p>";
         });
+    }
+
+    function toggleSection(sectionId) {
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.add('hidden');
       });
-    </script>
+      document.getElementById(sectionId).classList.remove('hidden');
+      localStorage.setItem('activeSection', sectionId);
+    }
 
-    <!-- Navigation -->
-    <div class="flex flex-col h-screen">
-      <nav
-        class="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between"
-      >
-        <!-- Left side: Logo and hamburger menu -->
-        <div class="flex items-center space-x-4">
-          <button
-            id="sidebar-toggle"
-            aria-label="Toggle sidebar"
-            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
-          >
-            <svg
-              class="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                d="M3 12h18M3 6h18M3 18h18"
-              ></path>
-            </svg>
-          </button>
-          <img
-            src="{% static 'images/idalog.jpg' %}"
-            alt="Ida Technology Logo"
-            class="w-36 object-contain sidebar-logo"
-          />
-        </div>
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const sectionId = this.getAttribute('data-section');
+        if (sectionId) {
+          e.preventDefault();
+          const newUrl = new URL(window.location.origin + window.location.pathname);
+          newUrl.searchParams.set('section', sectionId.replace('-section', ''));
+          history.pushState(null, '', newUrl.toString());
+          toggleSection(sectionId);
+        }
+      });
+    });
 
-        <!-- Right side: Icons and user profile -->
-        <div class="flex items-center space-x-6">
-          <form
-            id="search-form"
-            method="get"
-            action="{% url 'admin_panel:search' %}"
-            class="relative"
-          >
-            <input
-              type="text"
-              name="q"
-              id="search-input"
-              placeholder="Search..."
-              class="border border-gray-300 rounded-md px-3 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              autocomplete="off"
-            />
-            <button
-              type="submit"
-              aria-label="Submit Search"
-              class="absolute right-0 top-0 mt-1 mr-1 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
-            >
-              <i class="fas fa-search"></i>
-            </button>
-          </form>
-          <button
-            aria-label="Fullscreen"
-            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
-          >
-            <i class="fas fa-expand"></i>
-          </button>
-          <div class="relative group">
-            <button
-              class="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
-            >
-              {% if profile.profile_picture %}
-              <img
-                src="{{ profile.profile_picture.url }}"
-                alt="User Avatar"
-                class="w-8 h-8 rounded-full object-cover"
-              />
-              {% else %}
-              <img
-                src="{% static 'images/idalog.jpg' %}"
-                alt="User Avatar"
-                class="w-8 h-8 rounded-full object-cover"
-              />
-              {% endif %}
-              <svg
-                class="w-4 h-4 text-gray-600"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="2"
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M6 9l6 6 6-6"
-                ></path>
-              </svg>
-            </button>
-            <!-- Dropdown menu placeholder -->
-            <div
-              class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-10"
-            >
-              <a
-                href="{% url 'admin_panel:dashboard' %}"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Profile</a
-              >
-              <a
-                href="{% url 'auth:settings' %}"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Settings</a
-              >
-              <a
-                href="{% url 'auth:logout' %}"
-                class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Logout</a
-              >
-            </div>
-          </div>
-        </div>
-      </nav>
-      <div id="content-wrapper" class="flex flex-1 overflow-hidden">
-        <aside
-          id="sidebar"
-          class="bg-white shadow-md flex flex-col z-20 w-64 transition-width duration-300 ease-in-out"
-        >
-          <nav class="flex flex-col flex-grow overflow-y-auto">
-            <ul class="flex flex-col flex-grow space-y-1 p-2">
-              <li>
-                <a
-                  href="/?section=overview"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="overview"
-                  title="Dashboard"
-                >
-                  <i class="fas fa-tachometer-alt w-5 mr-3 text-blue-600"></i>
-                  <span>Dashboard</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/?section=students"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="students"
-                  title="Students"
-                >
-                  <i class="fas fa-graduation-cap w-5 mr-3 text-blue-600"></i>
-                  <span>Students</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/?section=employees"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="employees"
-                  title="Employees"
-                >
-                  <i class="fas fa-users w-5 mr-3 text-blue-600"></i>
-                  <span>Employees</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/?section=financial"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="financial"
-                  title="Financial"
-                >
-                  <i class="fas fa-dollar-sign w-5 mr-3 text-blue-600"></i>
-                  <span>Financial</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="/?section=reports"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="reports"
-                  title="Reports"
-                >
-                  <i class="fas fa-chart-bar w-5 mr-3 text-blue-600"></i>
-                  <span>Reports</span>
-                </a>
-              </li>
-              <li>
-                <a
-                  href="{% url 'auth:settings' %}"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  title="Settings"
-                >
-                  <i class="fas fa-cog w-5 mr-3 text-blue-600"></i>
-                  <span>Settings</span>
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </aside>
-        <main id="main-content" class="flex-1 p-6 overflow-y-auto max-h-screen">
-          {% block content %}
-          <!-- Dashboard Overview -->
-          <section id="overview" class="section">
-            <h2 class="text-2xl font-bold mb-6">Dashboard Overview</h2>
+    const urlParams = new URLSearchParams(window.location.search);
+    const sectionParam = urlParams.get('section');
+    const initialSection = sectionParam ? `${sectionParam}-section` : 'dashboard-section';
+    toggleSection(initialSection);
 
-            <div
-              class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-            >
-              <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex items-center">
-                  <div class="p-3 bg-blue-100 rounded-full">
-                    <i class="fas fa-graduation-cap text-blue-600"></i>
-                  </div>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-semibold">Total Students</h3>
-                    <p
-                      class="text-2xl font-bold text-blue-600"
-                      id="total-students"
-                    >
-                      {{ total_students }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex items-center">
-                  <div class="p-3 bg-green-100 rounded-full">
-                    <i class="fas fa-users text-green-600"></i>
-                  </div>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-semibold">Employees</h3>
-                    <p
-                      class="text-2xl font-bold text-green-600"
-                      id="total-employees"
-                    >
-                      {{ total_employees }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex items-center">
-                  <div class="p-3 bg-yellow-100 rounded-full">
-                    <i class="fas fa-microchip text-yellow-600"></i>
-                  </div>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-semibold">IoT Students</h3>
-                    <p
-                      class="text-2xl font-bold text-yellow-600"
-                      id="iot-students"
-                    >
-                      {{ iot_students }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white p-6 rounded-lg shadow">
-                <div class="flex items-center">
-                  <div class="p-3 bg-purple-100 rounded-full">
-                    <i class="fas fa-code text-purple-600"></i>
-                  </div>
-                  <div class="ml-4">
-                    <h3 class="text-lg font-semibold">SoD Students</h3>
-                    <p
-                      class="text-2xl font-bold text-purple-600"
-                      id="sod-students"
-                    >
-                      {{ sod_students }}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow p-6">
-              <h3 class="text-lg font-semibold mb-4">Recent Activities</h3>
-              <div class="mb-4 flex space-x-4 items-center">
-                <input
-                  type="text"
-                  id="filter-action"
-                  placeholder="Search actions..."
-                  class="border border-gray-300 rounded px-3 py-1"
-                />
-                <select
-                  id="filter-user"
-                  class="border border-gray-300 rounded px-3 py-1"
-                >
-                  <option value="">All Users</option>
-                  {% for user in user_list %}
-                  <option value="{{ user }}">{{ user }}</option>
-                  {% endfor %}
-                </select>
-                <select
-                  id="sort-by"
-                  class="border border-gray-300 rounded px-3 py-1"
-                >
-                  <option value="timestamp_desc">Newest First</option>
-                  <option value="timestamp_asc">Oldest First</option>
-                  <option value="action_asc">Action A-Z</option>
-                  <option value="action_desc">Action Z-A</option>
-                </select>
-                <button
-                  id="clear-filters"
-                  class="bg-gray-200 px-3 py-1 rounded"
-                >
-                  Clear
-                </button>
-              </div>
-              <div class="space-y-3" id="recent-activities">
-                {% for activity in recent_activities %}
-                <div
-                  class="flex items-center p-3 bg-gray-50 rounded justify-between"
-                >
-                  <div class="flex items-center">
-                    <i class="{{ activity.icon_class }} mr-3"></i>
-                    <span>{{ activity.action }}</span>
-                  </div>
-                  <button
-                    class="text-red-600 hover:text-red-900 delete-activity-btn"
-                    data-activity-id="{{ activity.id }}"
-                    aria-label="Delete activity"
-                    title="Delete activity"
-                  >
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </div>
-                {% empty %}
-                <div class="text-gray-500">No recent activities found.</div>
-                {% endfor %}
-              </div>
-            </div>
-          </section>
-
-          <!-- Students Section -->
-          <section id="students" class="section hidden">
-            <h2 class="text-2xl font-bold mb-6">Student Management</h2>
-
-            <div class="mb-6 flex justify-between items-center">
-              <div class="flex space-x-4">
-                <button
-                  class="filter-btn bg-blue-500 text-white px-4 py-2 rounded"
-                  data-filter="all"
-                >
-                  All Students
-                </button>
-                <button
-                  class="filter-btn bg-gray-200 px-4 py-2 rounded"
-                  data-filter="trainees"
-                >
-                  Trainees
-                </button>
-                <button
-                  class="filter-btn bg-gray-200 px-4 py-2 rounded"
-                  data-filter="internees"
-                >
-                  Internees
-                </button>
-                <button
-                  class="filter-btn bg-gray-200 px-4 py-2 rounded"
-                  data-filter="iot"
-                >
-                  IoT
-                </button>
-                <button
-                  class="filter-btn bg-gray-200 px-4 py-2 rounded"
-                  data-filter="sod"
-                >
-                  SoD
-                </button>
-              </div>
-              <form method="get" id="student-sort-form" class="flex items-center space-x-2">
-                <input
-                  type="text"
-                  id="student-search"
-                  name="search"
-                  placeholder="Search students by name..."
-                  class="border border-gray-300 rounded px-1 py-0.5 w-20 sm:w-32"
-                  value="{{ request.GET.search|default:'' }}"
-                />
-                <select
-                  name="sort"
-                  id="student-sort"
-                  class="border border-gray-300 rounded px-1 py-0.5 w-32 sm:w-40"
-                  onchange="document.getElementById('student-sort-form').submit()"
-                >
-                  <option value="name_asc" {% if request.GET.sort == 'name_asc' or not request.GET.sort %}selected{% endif %}>Name A-Z</option>
-                  <option value="name_desc" {% if request.GET.sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
-                  <option value="date_desc" {% if request.GET.sort == 'date_desc' %}selected{% endif %}>Date Added Newest First</option>
-                  <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Date Added Oldest First</option>
-                </select>
-                <button
-                  id="add-student-btn"
-                  class="bg-green-500 text-white px-2 py-0.5 rounded hover:bg-green-600"
-                  type="button"
-                >
-                  <i class="fas fa-plus mr-2"></i>Add Student
-                </button>
-              </form>
-            </div>
-
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-              <div class="overflow-x-auto max-w-full">
-                <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden checkbox-cell">
-                        <input type="checkbox" id="select-all-students" aria-label="Select all students" />
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Name
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Type
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Address
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Program
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Level
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="students-table" class="divide-y divide-gray-200">
-                    {% for student in students %}
-                    <tr class="{% if forloop.counter > 10 %}hidden extra-row{% endif %}">
-                      <td class="px-6 py-4 whitespace-nowrap hidden checkbox-cell">
-                        <input type="checkbox" class="student-checkbox" value="{{ student.id }}" aria-label="Select student {{ student.name }}" />
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.name }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.type }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.address }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.program }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.level }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <a
-                          href="{% url 'admin_panel:update_student' student.id %}"
-                          class="text-indigo-600 hover:text-indigo-900 mr-2"
-                          >Edit</a
-                        >
-                        <form
-                          action="{% url 'admin_panel:delete_student' student.id %}"
-                          method="post"
-                          class="inline"
-                        >
-                          {% csrf_token %}
-                          <button
-                            type="submit"
-                            class="text-red-600 hover:text-red-900"
-                            onclick="return confirm('Are you sure you want to delete this student?');"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                        <button type="button" class="select-btn text-blue-600 hover:text-blue-900 ml-2">
-                          Select
-                        </button>
-                      </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="7" class="text-center py-4">
-                        No students found.
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-                <div class="p-4 flex justify-between items-center">
-                {% if students|length > 10 %}
-                <button
-                  id="view-more-btn"
-                  class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                  type="button"
-                >
-                  View More
-                </button>
-                {% endif %}
-                <button
-                  id="delete-selected-students-btn"
-                  class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 hidden"
-                  type="button"
-                  disabled
-                >
-                  Delete Selected
-                </button>
-              </div>
-            </div>
-          </section>
-
-          <!-- Employees Section -->
-          <section id="employees" class="section hidden">
-            <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
-
-            <div class="mb-6 flex justify-between items-center">
-              <div class="flex space-x-4">
-                <input
-                  type="text"
-                  id="employee-search"
-                  placeholder="Search employees..."
-                  class="px-4 py-2 border rounded-lg"
-                />
-              </div>
-              <button
-                id="add-employee-btn"
-                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              >
-                <i class="fas fa-plus mr-2"></i>Add Employee
-              </button>
-            </div>
-
-            <div class="bg-white rounded-lg shadow overflow-hidden">
-              <div class="overflow-x-auto max-w-full">
-                <table class="w-full">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Name
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Position
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Department
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Salary
-                      </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
-                        Actions
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody id="employees-table" class="divide-y divide-gray-200">
-                    {% for employee in employees %}
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.name }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.position }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.department }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        ${{ employee.salary }}
-                      </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <a
-                          href="{% url 'admin_panel:update_employee' employee.id %}"
-                          class="text-indigo-600 hover:text-indigo-900 mr-2"
-                          >Edit</a
-                        >
-                        <form
-                          action="{% url 'admin_panel:delete_employee' employee.id %}"
-                          method="post"
-                          class="inline"
-                        >
-                          {% csrf_token %}
-                          <button
-                            type="submit"
-                            class="text-red-600 hover:text-red-900"
-                            onclick="return confirm('Are you sure you want to delete this employee?');"
-                          >
-                            Delete
-                          </button>
-                        </form>
-                      </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                      <td colspan="5" class="text-center py-4">
-                        No employees found.
-                      </td>
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </section>
-
-          <!-- Financial Section -->
-          <section id="financial" class="section hidden">
-            <h2 class="text-2xl font-bold mb-6">Financial Management</h2>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold mb-4">Monthly Summary</h3>
-                <div class="space-y-4">
-                  <div class="flex justify-between">
-                    <span>Total Salaries:</span>
-                    <span class="font-bold text-red-600" id="total-salaries"
-                      >${{ total_salaries }}</span
-                    >
-                  </div>
-                  <div class="flex justify-between">
-                    <span>Transport Expenses:</span>
-                    <span class="font-bold text-red-600" id="transport-expenses"
-                      >${{ transport_expenses }}</span
-                    >
-                  </div>
-                  <div class="flex justify-between">
-                    <span>Other Expenses:</span>
-                    <span class="font-bold text-red-600" id="other-expenses"
-                      >${{ other_expenses }}</span
-                    >
-                  </div>
-                  <hr />
-                  <div class="flex justify-between text-lg font-bold">
-                    <span>Total Expenses:</span>
-                    <span class="text-red-600" id="total-expenses"
-                      >${{ total_expenses }}</span
-                    >
-                  </div>
-                </div>
-              </div>
-
-              <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold mb-4">Add Expense</h3>
-                <form id="expense-form">
-                  <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Type</label>
-                    <select
-                      id="expense-type"
-                      name="expense-type"
-                      class="w-full px-3 py-2 border rounded-lg"
-                    >
-                      <option value="salary">Salary</option>
-                      <option value="transport">Transport</option>
-                      <option value="other">Other</option>
-                    </select>
-                  </div>
-                  <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2"
-                      >Description</label
-                    >
-                    <input
-                      type="text"
-                      id="expense-description"
-                      name="expense-description"
-                      class="w-full px-3 py-2 border rounded-lg"
-                      required
-                    />
-                  </div>
-                  <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2">Amount</label>
-                    <input
-                      type="number"
-                      id="expense-amount"
-                      name="expense-amount"
-                      class="w-full px-3 py-2 border rounded-lg"
-                      required
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600"
-                  >
-                    Add Expense
-                  </button>
-                </form>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-lg shadow">
-              <div class="p-6 border-b flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
-                <h3 class="text-lg font-semibold">Recent Transactions</h3>
-                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
-                  <input
-                    type="text"
-                    id="transaction-search"
-                    placeholder="Search transactions..."
-                    class="border border-gray-300 rounded px-3 py-1"
-                  />
-                  <select
-                    id="transaction-filter-type"
-                    class="border border-gray-300 rounded px-3 py-1"
-                  >
-                    <option value="">All Types</option>
-                    <option value="salary">Salary</option>
-                    <option value="transport">Transport</option>
-                    <option value="other">Other</option>
-                  </select>
-                  <select
-                    id="transaction-sort-by"
-                    class="border border-gray-300 rounded px-3 py-1"
-                  >
-                    <option value="date_desc">Date Descending</option>
-                    <option value="date_asc">Date Ascending</option>
-                    <option value="amount_desc">Amount Descending</option>
-                    <option value="amount_asc">Amount Ascending</option>
-                  </select>
-                </div>
-              </div>
-              <div class="p-6">
-                <div class="overflow-x-auto max-w-full">
-                  <table class="w-full">
-                    <thead>
-                      <tr class="border-b">
-                        <th class="text-left py-2">Date</th>
-                        <th class="text-left py-2">Type</th>
-                        <th class="text-left py-2">Description</th>
-                        <th class="text-right py-2">Amount</th>
-                        <th class="text-center py-2">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody id="transactions-table"></tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <!-- Reports Section -->
-          <section id="reports" class="section hidden">
-            <h2 class="text-2xl font-bold mb-6">Reports</h2>
-
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-              <button
-                class="report-btn bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600"
-                data-report="students"
-              >
-                <i class="fas fa-graduation-cap text-2xl mb-2"></i>
-                <h3 class="font-semibold">Students Report</h3>
-              </button>
-              <button
-                class="report-btn bg-green-500 text-white p-6 rounded-lg hover:bg-green-600"
-                data-report="employees"
-              >
-                <i class="fas fa-users text-2xl mb-2"></i>
-                <h3 class="font-semibold">Employees Report</h3>
-              </button>
-              <button
-                class="report-btn bg-purple-500 text-white p-6 rounded-lg hover:bg-purple-600"
-                data-report="financial"
-              >
-                <i class="fas fa-chart-line text-2xl mb-2"></i>
-                <h3 class="font-semibold">Financial Report</h3>
-              </button>
-            </div>
-
-            <div id="report-content" class="bg-white rounded-lg shadow p-6">
-              <p class="text-gray-500 text-center">
-                Select a report type above to generate a report
-              </p>
-            </div>
-
-            <!-- Students Report Content -->
-            <div id="students-report" class="report-section hidden">
-              <h3 class="text-xl font-semibold mb-4">Student Reports</h3>
-              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {% for student in students %}
-                <div class="bg-white border border-gray-200 rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-                  <div class="flex items-center mb-4">
-                    {% if student.photo %}
-                    <img src="{{ student.photo.url }}" alt="Student Photo" class="w-12 h-12 rounded-full object-cover mr-4">
-                    {% else %}
-                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
-                      <i class="fas fa-user text-gray-400"></i>
-                    </div>
-                    {% endif %}
-                    <div>
-                      <h4 class="font-semibold text-lg">{{ student.name }}</h4>
-                      <p class="text-gray-600 text-sm">{{ student.get_type_display }}</p>
-                    </div>
-                  </div>
-                  <div class="space-y-2 mb-4">
-                    <p class="text-sm"><strong>Program:</strong> {{ student.get_program_display }}</p>
-                    <p class="text-sm"><strong>Level:</strong> {{ student.level }}</p>
-                    <p class="text-sm"><strong>Attendance:</strong> {{ student.attendance_percentage|floatformat:1 }}%</p>
-                    <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
-                  </div>
-                  <div class="flex space-x-2">
-                    <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex-1 text-center">
-                      <i class="fas fa-eye mr-1"></i>View Report
-                    </a>
-                    <a href="{% url 'admin_panel:export_student_report_pdf' student.id %}" class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600">
-                      <i class="fas fa-file-pdf"></i>
-                    </a>
-                    <a href="{% url 'admin_panel:export_student_report_excel' student.id %}" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
-                      <i class="fas fa-file-excel"></i>
-                    </a>
-                  </div>
-                </div>
-                {% empty %}
-                <div class="col-span-full text-center py-8">
-                  <i class="fas fa-graduation-cap text-4xl text-gray-300 mb-4"></i>
-                  <p class="text-gray-500">No students found.</p>
-                </div>
-                {% endfor %}
-              </div>
-            </div>
-
-            <!-- Employees Report Content -->
-            <div id="employees-report" class="report-section hidden">
-              <h3 class="text-xl font-semibold mb-4">Employee Reports</h3>
-              <p class="text-gray-500 text-center">Employee reports coming soon...</p>
-            </div>
-
-            <!-- Financial Report Content -->
-            <div id="financial-report" class="report-section hidden">
-              <h3 class="text-xl font-semibold mb-4">Financial Reports</h3>
-              <p class="text-gray-500 text-center">Financial reports coming soon...</p>
-            </div>
-          </section>
-          {% endblock %}
-        </main>
-      </div>
-
-      <!-- Modals -->
-      <!-- Add Student Modal -->
-      <div
-        id="student-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm"
-      >
-        <div class="bg-white rounded-lg p-6 w-96 z-60">
-          <h3 class="text-lg font-semibold mb-4">Add Student</h3>
-            <form id="student-form">
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  id="student-name"
-                  name="student-name"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Type</label>
-                <select
-                  id="student-type"
-                  name="student-type"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="trainee">Trainee</option>
-                  <option value="internee-university">
-                    Internee (University)
-                  </option>
-                  <option value="internee-highschool">
-                    Internee (High School)
-                  </option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Program</label>
-                <select
-                  id="student-program"
-                  name="student-program"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="iot">IoT</option>
-                  <option value="sod">SoD</option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Level</label>
-                <input
-                  type="text"
-                  id="student-level"
-                  name="student-level"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Address</label>
-                <select
-                  id="student-address"
-                  name="student-address"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                >
-                  <option value="" disabled selected>Select Address</option>
-                  <option value="Bumbogo">Bumbogo</option>
-                  <option value="Gatsata">Gatsata</option>
-                  <option value="Gikomero">Gikomero</option>
-                  <option value="Gisozi">Gisozi</option>
-                  <option value="Jabana">Jabana</option>
-                  <option value="Jali">Jali</option>
-                  <option value="Kacyiru">Kacyiru</option>
-                  <option value="Kimihurura">Kimihurura</option>
-                  <option value="Kimironko">Kimironko</option>
-                  <option value="Kinyinya">Kinyinya</option>
-                  <option value="Ndera">Ndera</option>
-                  <option value="Nduba">Nduba</option>
-                  <option value="Remera">Remera</option>
-                  <option value="Rusororo">Rusororo</option>
-                  <option value="Rutunga">Rutunga</option>
-                  <option value="Gahanga">Gahanga</option>
-                  <option value="Gatenga">Gatenga</option>
-                  <option value="Gikondo">Gikondo</option>
-                  <option value="Kagarama">Kagarama</option>
-                  <option value="Kanombe">Kanombe</option>
-                  <option value="Kicukiro">Kicukiro</option>
-                  <option value="Kigarama">Kigarama</option>
-                  <option value="Masaka">Masaka</option>
-                  <option value="Niboye">Niboye</option>
-                  <option value="Nyarugunga">Nyarugunga</option>
-                  <option value="Gitega">Gitega</option>
-                  <option value="Kanyinya">Kanyinya</option>
-                  <option value="Kigali">Kigali</option>
-                  <option value="Kimisagara">Kimisagara</option>
-                  <option value="Mageragere">Mageragere</option>
-                  <option value="Muhima">Muhima</option>
-                  <option value="Nyakabanda">Nyakabanda</option>
-                  <option value="Nyamirambo">Nyamirambo</option>
-                  <option value="Nyarugenge">Nyarugenge</option>
-                  <option value="Rwezamenyo">Rwezamenyo</option>
-                </select>
-              </div>
-              <div class="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  id="cancel-student"
-                  class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Add Student
-                </button>
-              </div>
-            </form>
-        </div>
-      </div>
-
-      <!-- Add Employee Modal -->
-      <div
-        id="employee-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
-      >
-        <div class="bg-white rounded-lg p-6 w-96">
-          <h3 class="text-lg font-semibold mb-4">Add Employee</h3>
-          <form id="employee-form">
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Name</label>
-              <input
-                type="text"
-                id="employee-name"
-                name="employee-name"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Position</label>
-              <input
-                type="text"
-                id="employee-position"
-                name="employee-position"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Department</label>
-              <input
-                type="text"
-                id="employee-department"
-                name="employee-department"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Salary</label>
-              <input
-                type="number"
-                id="employee-salary"
-                name="employee-salary"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="flex justify-end space-x-2">
-              <button
-                type="button"
-                id="cancel-employee"
-                class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Add Employee
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <script src="{% static 'script.js' %}"></script>
-      <script src="{% static 'ui-interactions.js' %}"></script>
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          // View More button toggle
-          const viewMoreBtn = document.getElementById("view-more-btn");
-          if (viewMoreBtn) {
-            viewMoreBtn.addEventListener("click", function () {
-              const extraRows = document.querySelectorAll(".extra-row");
-              extraRows.forEach((row) => {
-                if (row.classList.contains("hidden")) {
-                  row.classList.remove("hidden");
-                  viewMoreBtn.textContent = "View Less";
-                } else {
-                  row.classList.add("hidden");
-                  viewMoreBtn.textContent = "View More";
-                  // Scroll to the table top when collapsing
-                  document.getElementById("students-table").scrollIntoView({ behavior: "smooth" });
-                }
-              });
-            });
-          }
-
-          // Add Student button opens modal
-          const addStudentBtn = document.getElementById("add-student-btn");
-          const studentModal = document.getElementById("student-modal");
-          const cancelStudentBtn = document.getElementById("cancel-student");
-
-          if (addStudentBtn && studentModal) {
-            addStudentBtn.addEventListener("click", function () {
-              studentModal.classList.remove("hidden");
-              studentModal.classList.add("flex");
-            });
-          }
-
-          if (cancelStudentBtn && studentModal) {
-            cancelStudentBtn.addEventListener("click", function () {
-              studentModal.classList.add("hidden");
-              studentModal.classList.remove("flex");
-            });
-          }
-        });
-      </script>
-      {% csrf_token %}
-    </div>
-  </body>
-</html>
+    // Initial load of recent activities
+    getRecentActivities();
+    
+    // Auto-refresh recent activities every 30 seconds
+    setInterval(getRecentActivities, 30000);
+  });
+</script>
+{% endblock %}
