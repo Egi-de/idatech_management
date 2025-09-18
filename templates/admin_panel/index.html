@@ -28,36 +28,36 @@
           role="alert"
           data-message-level="{{ message.level }}"
         >
-          <div class="p-4">
-            <div class="flex items-start">
-              <div class="flex-shrink-0">
-                {% if message.level == 40 %}
+         <div class="p-4">
+           <div class="flex items-start">
+             <div class="flex-shrink-0">
+               {% if message.level == 40 %}
                 <svg
-                  class="h-6 w-6 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
+                 class="h-6 w-6 text-red-600"
+                 fill="none"
+                 stroke="currentColor"
                   stroke-width="2"
-                  viewBox="0 0 24 24"
+                 viewBox="0 0 24 24"
                   aria-hidden="true"
-                >
+               >
                   <path
-                    stroke-linecap="round"
+                   stroke-linecap="round"
                     stroke-linejoin="round"
                     d="M6 18L18 6M6 6l12 12"
                   />
-                </svg>
+               </svg>
                 {% elif message.level == 25 %}
-                <svg
+               <svg
                   class="h-6 w-6 text-green-600"
                   fill="none"
                   stroke="currentColor"
                   stroke-width="2"
-                  viewBox="0 0 24 24"
+                 viewBox="0 0 24 24"
                   aria-hidden="true"
                 >
-                  <path
+                 <path
                     stroke-linecap="round"
-                    stroke-linejoin="round"
+                   stroke-linejoin="round"
                     d="M5 13l4 4L19 7"
                   />
                 </svg>
@@ -69,7 +69,7 @@
                   stroke-width="2"
                   viewBox="0 0 24 24"
                   aria-hidden="true"
-                >
+               >
                   <circle
                     cx="12"
                     cy="12"
@@ -79,7 +79,7 @@
                     fill="none"
                   />
                 </svg>
-                {% endif %}
+               {% endif %}
               </div>
               <div class="ml-3 w-0 flex-1 pt-0.5">
                 <p class="text-sm font-medium text-gray-900">{{ message }}</p>
@@ -134,7 +134,7 @@
           <button
             id="sidebar-toggle"
             aria-label="Toggle sidebar"
-            class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
+           class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
           >
             <svg
               class="w-6 h-6"
@@ -145,21 +145,21 @@
               aria-hidden="true"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
+             <path
                 stroke-linecap="round"
                 stroke-linejoin="round"
                 d="M3 12h18M3 6h18M3 18h18"
-              ></path>
-            </svg>
+             ></path>
+           </svg>
           </button>
           <img
-            src="{% static 'images/idalog.jpg' %}"
+           src="{% static 'images/idalog.jpg' %}"
             alt="Ida Technology Logo"
             class="w-36 object-contain sidebar-logo"
-          />
+         />
         </div>
 
-        <!-- Right side: Icons and user profile -->
+       <!-- Right side: Icons and user profile -->
         <div class="flex items-center space-x-6">
           <form
             id="search-form"
@@ -179,7 +179,7 @@
               type="submit"
               aria-label="Submit Search"
               class="absolute right-0 top-0 mt-1 mr-1 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-1"
-            >
+          >
               <i class="fas fa-search"></i>
             </button>
           </form>
@@ -187,19 +187,19 @@
             aria-label="Fullscreen"
             class="text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
           >
-            <i class="fas fa-expand"></i>
+           <i class="fas fa-expand"></i>
           </button>
-          <div class="relative group">
+         <div class="relative group">
             <button
               class="flex items-center space-x-1 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
             >
-              {% if profile.profile_picture %}
+             {% if profile.profile_picture %}
               <img
                 src="{{ profile.profile_picture.url }}"
                 alt="User Avatar"
                 class="w-8 h-8 rounded-full object-cover"
-              />
-              {% else %}
+             />
+             {% else %}
               <img
                 src="{% static 'images/idalog.jpg' %}"
                 alt="User Avatar"
@@ -209,10 +209,10 @@
               <svg
                 class="w-4 h-4 text-gray-600"
                 fill="none"
-                stroke="currentColor"
+               stroke="currentColor"
                 stroke-width="2"
                 viewBox="0 0 24 24"
-                aria-hidden="true"
+               aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
@@ -226,7 +226,7 @@
             <div
               class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-10"
             >
-              <a
+             <a
                 href="{% url 'admin_panel:dashboard' %}"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
                 >Profile</a
@@ -234,12 +234,12 @@
               <a
                 href="{% url 'auth:settings' %}"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Settings</a
+               >Settings</a
               >
               <a
                 href="{% url 'auth:logout' %}"
                 class="block px-4 py-2 text-gray-700 hover:bg-gray-100"
-                >Logout</a
+               >Logout</a
               >
             </div>
           </div>
@@ -258,22 +258,76 @@
                   class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
                   data-section="overview"
                   title="Dashboard"
-                >
+               >
                   <i class="fas fa-tachometer-alt w-5 mr-3 text-blue-600"></i>
                   <span>Dashboard</span>
                 </a>
               </li>
               <li>
-                <a
-                  href="/?section=students"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
-                  data-section="students"
-                  title="Students"
-                >
-                  <i class="fas fa-graduation-cap w-5 mr-3 text-blue-600"></i>
-                  <span>Students</span>
-                </a>
-              </li>
+  <button
+    class="flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 transition focus:outline-none"
+    onclick="toggleSubmenu('students-submenu', this)"
+  >
+    <i class="fas fa-graduation-cap w-5 mr-3 text-blue-600"></i>
+    <span>Students</span>
+    <i class="fas fa-chevron-down ml-auto transition-transform duration-200"></i>
+  </button>
+
+  <ul
+    id="students-submenu"
+    class="mt-2 space-y-1 bg-gray-50 rounded-md shadow-inner border border-gray-200 hidden"
+  >
+    <li>
+      <a href="/?section=student-profile"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Student Profile
+      </a>
+    </li>
+    <li>
+      <a href="/?section=enrollment"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Enrollment Details
+      </a>
+    </li>
+    <li>
+      <a href="/?section=attendance"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Attendance & Participation
+      </a>
+    </li>
+    <li>
+      <a href="/?section=performance"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Performance / Grades
+      </a>
+    </li>
+    <li>
+      <a href="/?section=activities"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Activities & Achievements
+      </a>
+    </li>
+    <li>
+      <a href="/?section=feedback"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Feedback & Evaluation
+      </a>
+    </li>
+    <li>
+      <a href="/?section=status"
+        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
+      >
+        Status & Recommendations
+      </a>
+    </li>
+  </ul>
+</li>
               <li>
                 <a
                   href="/?section=employees"
@@ -307,7 +361,7 @@
                   <span>Reports</span>
                 </a>
               </li>
-              <li>
+             <li>
                 <a
                   href="{% url 'auth:settings' %}"
                   class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
@@ -316,7 +370,7 @@
                   <i class="fas fa-cog w-5 mr-3 text-blue-600"></i>
                   <span>Settings</span>
                 </a>
-              </li>
+             </li>
             </ul>
           </nav>
         </aside>
@@ -335,7 +389,7 @@
                     <i class="fas fa-graduation-cap text-blue-600"></i>
                   </div>
                   <div class="ml-4">
-                    <h3 class="text-lg font-semibold">Total Students</h3>
+                   <h3 class="text-lg font-semibold">Total Students</h3>
                     <p
                       class="text-2xl font-bold text-blue-600"
                       id="total-students"
@@ -345,7 +399,6 @@
                   </div>
                 </div>
               </div>
-
               <div class="bg-white p-6 rounded-lg shadow">
                 <div class="flex items-center">
                   <div class="p-3 bg-green-100 rounded-full">
@@ -362,7 +415,6 @@
                   </div>
                 </div>
               </div>
-
               <div class="bg-white p-6 rounded-lg shadow">
                 <div class="flex items-center">
                   <div class="p-3 bg-yellow-100 rounded-full">
@@ -407,7 +459,7 @@
                   placeholder="Search actions..."
                   class="border border-gray-300 rounded px-3 py-1"
                 />
-                <select
+               <select
                   id="filter-user"
                   class="border border-gray-300 rounded px-3 py-1"
                 >
@@ -415,7 +467,7 @@
                   {% for user in user_list %}
                   <option value="{{ user }}">{{ user }}</option>
                   {% endfor %}
-                </select>
+               </select>
                 <select
                   id="sort-by"
                   class="border border-gray-300 rounded px-3 py-1"
@@ -426,13 +478,13 @@
                   <option value="action_desc">Action Z-A</option>
                 </select>
                 <button
-                  id="clear-filters"
+                 id="clear-filters"
                   class="bg-gray-200 px-3 py-1 rounded"
-                >
+               >
                   Clear
-                </button>
+               </button>
               </div>
-              <div class="space-y-3" id="recent-activities">
+             <div class="space-y-3" id="recent-activities">
                 {% for activity in recent_activities %}
                 <div
                   class="flex items-center p-3 bg-gray-50 rounded justify-between"
@@ -440,9 +492,9 @@
                   <div class="flex items-center">
                     <i class="{{ activity.icon_class }} mr-3"></i>
                     <span>{{ activity.action }}</span>
-                  </div>
+                 </div>
                   <button
-                    class="text-red-600 hover:text-red-900 delete-activity-btn"
+                   class="text-red-600 hover:text-red-900 delete-activity-btn"
                     data-activity-id="{{ activity.id }}"
                     aria-label="Delete activity"
                     title="Delete activity"
@@ -453,10 +505,9 @@
                 {% empty %}
                 <div class="text-gray-500">No recent activities found.</div>
                 {% endfor %}
-              </div>
+             </div>
             </div>
           </section>
-
           <!-- Students Section -->
           <section id="students" class="section hidden">
             <h2 class="text-2xl font-bold mb-6">Student Management</h2>
@@ -488,7 +539,7 @@
                   IoT
                 </button>
                 <button
-                  class="filter-btn bg-gray-200 px-4 py-2 rounded"
+                 class="filter-btn bg-gray-200 px-4 py-2 rounded"
                   data-filter="sod"
                 >
                   SoD
@@ -509,32 +560,32 @@
                   class="border border-gray-300 rounded px-1 py-0.5 w-32 sm:w-40"
                   onchange="document.getElementById('student-sort-form').submit()"
                 >
-                  <option value="name_asc" {% if request.GET.sort == 'name_asc' or not request.GET.sort %}selected{% endif %}>Name A-Z</option>
+                 <option value="name_asc" {% if request.GET.sort == 'name_asc' or not request.GET.sort %}selected{% endif %}>Name A-Z</option>
                   <option value="name_desc" {% if request.GET.sort == 'name_desc' %}selected{% endif %}>Name Z-A</option>
                   <option value="date_desc" {% if request.GET.sort == 'date_desc' %}selected{% endif %}>Date Added Newest First</option>
-                  <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Date Added Oldest First</option>
+                 <option value="date_asc" {% if request.GET.sort == 'date_asc' %}selected{% endif %}>Date Added Oldest First</option>
                 </select>
                 <button
-                  id="add-student-btn"
+                 id="add-student-btn"
                   class="bg-green-500 text-white px-2 py-0.5 rounded hover:bg-green-600"
                   type="button"
                 >
-                  <i class="fas fa-plus mr-2"></i>Add Student
+                 <i class="fas fa-plus mr-2"></i>Add Student
                 </button>
               </form>
             </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
               <div class="overflow-x-auto max-w-full">
-                <table class="w-full">
+               <table class="w-full">
                 <thead class="bg-gray-50">
-                    <tr>
+                   <tr>
                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase hidden checkbox-cell">
-                        <input type="checkbox" id="select-all-students" aria-label="Select all students" />
+                       <input type="checkbox" id="select-all-students" aria-label="Select all students" />
                       </th>
-                      <th
+                     <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                     >
                         Name
                       </th>
                       <th
@@ -543,16 +594,16 @@
                         Type
                       </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                       class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                     >
                         Address
-                      </th>
+                     </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
                         Program
                       </th>
-                      <th
+                     <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
                         Level
@@ -563,9 +614,9 @@
                         Actions
                       </th>
                     </tr>
-                  </thead>
+                 </thead>
                   <tbody id="students-table" class="divide-y divide-gray-200">
-                    {% for student in students %}
+                   {% for student in students %}
                     <tr class="{% if forloop.counter > 10 %}hidden extra-row{% endif %}">
                       <td class="px-6 py-4 whitespace-nowrap hidden checkbox-cell">
                         <input type="checkbox" class="student-checkbox" value="{{ student.id }}" aria-label="Select student {{ student.name }}" />
@@ -574,7 +625,7 @@
                         {{ student.name }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ student.type }}
+                       {{ student.type }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         {{ student.address }}
@@ -596,7 +647,7 @@
                           method="post"
                           class="inline"
                         >
-                          {% csrf_token %}
+                        {% csrf_token %}
                           <button
                             type="submit"
                             class="text-red-600 hover:text-red-900"
@@ -613,55 +664,53 @@
                     {% empty %}
                     <tr>
                       <td colspan="7" class="text-center py-4">
-                        No students found.
+                       No students found.
                       </td>
                     </tr>
-                    {% endfor %}
-                  </tbody>
+                   {% endfor %}
+                 </tbody>
                 </table>
               </div>
-                <div class="p-4 flex justify-between items-center">
+               <div class="p-4 flex justify-between items-center">
                 {% if students|length > 10 %}
-                <button
-                  id="view-more-btn"
+               <button
+                id="view-more-btn"
                   class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-                  type="button"
+                 type="button"
                 >
                   View More
-                </button>
+               </button>
                 {% endif %}
                 <button
-                  id="delete-selected-students-btn"
+                 id="delete-selected-students-btn"
                   class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 disabled:opacity-50 hidden"
                   type="button"
-                  disabled
+                 disabled
                 >
-                  Delete Selected
+                 Delete Selected
                 </button>
-              </div>
+             </div>
             </div>
           </section>
-
           <!-- Employees Section -->
           <section id="employees" class="section hidden">
-            <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
-
+           <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
             <div class="mb-6 flex justify-between items-center">
-              <div class="flex space-x-4">
+             <div class="flex space-x-4">
                 <input
-                  type="text"
+                 type="text"
                   id="employee-search"
-                  placeholder="Search employees..."
+                 placeholder="Search employees..."
                   class="px-4 py-2 border rounded-lg"
-                />
+               />
               </div>
               <button
                 id="add-employee-btn"
-                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+               class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
               >
                 <i class="fas fa-plus mr-2"></i>Add Employee
               </button>
-            </div>
+           </div>
 
             <div class="bg-white rounded-lg shadow overflow-hidden">
               <div class="overflow-x-auto max-w-full">
@@ -670,7 +719,7 @@
                     <tr>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                     >
                         Name
                       </th>
                       <th
@@ -680,64 +729,64 @@
                       </th>
                       <th
                         class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                   >
                         Department
-                      </th>
+                     </th>
                       <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                        Salary
+                       Salary
                       </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+                    <th
+                       class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
                       >
-                        Actions
+                       Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody id="employees-table" class="divide-y divide-gray-200">
-                    {% for employee in employees %}
+                   {% for employee in employees %}
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.name }}
-                      </td>
+                       {{ employee.name }}
+                     </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.position }}
-                      </td>
+                       {{ employee.position }}
+                     </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.department }}
+                       {{ employee.department }}
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                     <td class="px-6 py-4 whitespace-nowrap">
                         ${{ employee.salary }}
-                      </td>
+                     </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <a
                           href="{% url 'admin_panel:update_employee' employee.id %}"
-                          class="text-indigo-600 hover:text-indigo-900 mr-2"
+                         class="text-indigo-600 hover:text-indigo-900 mr-2"
                           >Edit</a
                         >
-                        <form
+                     <form
                           action="{% url 'admin_panel:delete_employee' employee.id %}"
-                          method="post"
+                         method="post"
                           class="inline"
                         >
-                          {% csrf_token %}
-                          <button
-                            type="submit"
+                         {% csrf_token %}
+                        <button
+                           type="submit"
                             class="text-red-600 hover:text-red-900"
                             onclick="return confirm('Are you sure you want to delete this employee?');"
                           >
-                            Delete
+                           Delete
                           </button>
                         </form>
-                      </td>
+                     </td>
                     </tr>
-                    {% empty %}
+                   {% empty %}
                     <tr>
                       <td colspan="5" class="text-center py-4">
                         No employees found.
                       </td>
-                    </tr>
+                   </tr>
                     {% endfor %}
                   </tbody>
                 </table>
@@ -745,70 +794,69 @@
             </div>
           </section>
 
-          <!-- Financial Section -->
+         <!-- Financial Section -->
           <section id="financial" class="section hidden">
             <h2 class="text-2xl font-bold mb-6">Financial Management</h2>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+           <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
               <div class="bg-white rounded-lg shadow p-6">
-                <h3 class="text-lg font-semibold mb-4">Monthly Summary</h3>
+               <h3 class="text-lg font-semibold mb-4">Monthly Summary</h3>
                 <div class="space-y-4">
                   <div class="flex justify-between">
                     <span>Total Salaries:</span>
-                    <span class="font-bold text-red-600" id="total-salaries"
+                   <span class="font-bold text-red-600" id="total-salaries"
                       >${{ total_salaries }}</span
-                    >
+                   >
                   </div>
-                  <div class="flex justify-between">
+                 <div class="flex justify-between">
                     <span>Transport Expenses:</span>
-                    <span class="font-bold text-red-600" id="transport-expenses"
+                   <span class="font-bold text-red-600" id="transport-expenses"
                       >${{ transport_expenses }}</span
-                    >
+                   >
                   </div>
-                  <div class="flex justify-between">
-                    <span>Other Expenses:</span>
+                 <div class="flex justify-between">
+                   <span>Other Expenses:</span>
                     <span class="font-bold text-red-600" id="other-expenses"
                       >${{ other_expenses }}</span
-                    >
+                   >
                   </div>
-                  <hr />
+                 <hr />
                   <div class="flex justify-between text-lg font-bold">
                     <span>Total Expenses:</span>
                     <span class="text-red-600" id="total-expenses"
-                      >${{ total_expenses }}</span
+                   >${{ total_expenses }}</span
                     >
-                  </div>
+                 </div>
                 </div>
               </div>
-
-              <div class="bg-white rounded-lg shadow p-6">
+             <div class="bg-white rounded-lg shadow p-6">
                 <h3 class="text-lg font-semibold mb-4">Add Expense</h3>
                 <form id="expense-form">
-                  <div class="mb-4">
+                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Type</label>
-                    <select
-                      id="expense-type"
+                   <select
+                     id="expense-type"
                       name="expense-type"
-                      class="w-full px-3 py-2 border rounded-lg"
+                     class="w-full px-3 py-2 border rounded-lg"
                     >
                       <option value="salary">Salary</option>
-                      <option value="transport">Transport</option>
+                     <option value="transport">Transport</option>
                       <option value="other">Other</option>
-                    </select>
+                   </select>
                   </div>
                   <div class="mb-4">
-                    <label class="block text-sm font-medium mb-2"
+                   <label class="block text-sm font-medium mb-2"
                       >Description</label
-                    >
+                   >
                     <input
                       type="text"
                       id="expense-description"
                       name="expense-description"
-                      class="w-full px-3 py-2 border rounded-lg"
+                     class="w-full px-3 py-2 border rounded-lg"
                       required
                     />
                   </div>
-                  <div class="mb-4">
+                 <div class="mb-4">
                     <label class="block text-sm font-medium mb-2">Amount</label>
                     <input
                       type="number"
@@ -831,7 +879,7 @@
             <div class="bg-white rounded-lg shadow">
               <div class="p-6 border-b flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
                 <h3 class="text-lg font-semibold">Recent Transactions</h3>
-                <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
+               <div class="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0">
                   <input
                     type="text"
                     id="transaction-search"
@@ -848,7 +896,7 @@
                     <option value="other">Other</option>
                   </select>
                   <select
-                    id="transaction-sort-by"
+                   id="transaction-sort-by"
                     class="border border-gray-300 rounded px-3 py-1"
                   >
                     <option value="date_desc">Date Descending</option>
@@ -871,7 +919,7 @@
                       </tr>
                     </thead>
                     <tbody id="transactions-table"></tbody>
-                  </table>
+                 </table>
                 </div>
               </div>
             </div>
@@ -883,7 +931,7 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
               <button
-                class="report-btn bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600"
+               class="report-btn bg-blue-500 text-white p-6 rounded-lg hover:bg-blue-600"
                 data-report="students"
               >
                 <i class="fas fa-graduation-cap text-2xl mb-2"></i>
@@ -920,10 +968,10 @@
                   <div class="flex items-center mb-4">
                     {% if student.photo %}
                     <img src="{{ student.photo.url }}" alt="Student Photo" class="w-12 h-12 rounded-full object-cover mr-4">
-                    {% else %}
+                   {% else %}
                     <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mr-4">
                       <i class="fas fa-user text-gray-400"></i>
-                    </div>
+                   </div>
                     {% endif %}
                     <div>
                       <h4 class="font-semibold text-lg">{{ student.name }}</h4>
@@ -934,7 +982,7 @@
                     <p class="text-sm"><strong>Program:</strong> {{ student.get_program_display }}</p>
                     <p class="text-sm"><strong>Level:</strong> {{ student.level }}</p>
                     <p class="text-sm"><strong>Attendance:</strong> {{ student.attendance_percentage|floatformat:1 }}%</p>
-                    <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
+                   <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
                   </div>
                   <div class="flex space-x-2">
                     <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex-1 text-center">
@@ -946,7 +994,7 @@
                     <a href="{% url 'admin_panel:export_student_report_excel' student.id %}" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
                       <i class="fas fa-file-excel"></i>
                     </a>
-                  </div>
+                 </div>
                 </div>
                 {% empty %}
                 <div class="col-span-full text-center py-8">
@@ -955,9 +1003,9 @@
                 </div>
                 {% endfor %}
               </div>
-            </div>
+           </div>
 
-            <!-- Employees Report Content -->
+           <!-- Employees Report Content -->
             <div id="employees-report" class="report-section hidden">
               <h3 class="text-xl font-semibold mb-4">Employee Reports</h3>
               <p class="text-gray-500 text-center">Employee reports coming soon...</p>
@@ -1016,7 +1064,7 @@
                   class="w-full px-3 py-2 border rounded-lg"
                 >
                   <option value="iot">IoT</option>
-                  <option value="sod">SoD</option>
+                 <option value="sod">SoD</option>
                 </select>
               </div>
               <div class="mb-4">
@@ -1025,10 +1073,10 @@
                   type="text"
                   id="student-level"
                   name="student-level"
-                  class="w-full px-3 py-2 border rounded-lg"
+                 class="w-full px-3 py-2 border rounded-lg"
                   required
                 />
-              </div>
+             </div>
               <div class="mb-4">
                 <label class="block text-sm font-medium mb-2">Address</label>
                 <select
@@ -1036,12 +1084,12 @@
                   name="student-address"
                   class="w-full px-3 py-2 border rounded-lg"
                   required
-                >
+               >
                   <option value="" disabled selected>Select Address</option>
                   <option value="Bumbogo">Bumbogo</option>
                   <option value="Gatsata">Gatsata</option>
                   <option value="Gikomero">Gikomero</option>
-                  <option value="Gisozi">Gisozi</option>
+                 <option value="Gisozi">Gisozi</option>
                   <option value="Jabana">Jabana</option>
                   <option value="Jali">Jali</option>
                   <option value="Kacyiru">Kacyiru</option>
@@ -1203,7 +1251,19 @@
             });
           }
         });
-      </script>
+     </script>
+     <script>
+  function toggleSubmenu(id, button) {
+    const submenu = document.getElementById(id);
+    submenu.classList.toggle("hidden");
+
+    // Rotate chevron icon
+    const chevron = button.querySelector(".fa-chevron-down");
+    chevron.classList.toggle("rotate-180");
+  }
+</script>
+
+
       {% csrf_token %}
     </div>
   </body>

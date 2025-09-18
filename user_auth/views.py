@@ -24,7 +24,7 @@ def login(request):
         else:
             messages.error(request, 'Invalid username or password.')
             return redirect('auth:login')
-    return render(request, 'admin_panel/login.html')
+    return render(request, 'user_auth/login.html')
 
 def logout(request):
     auth_logout(request)
@@ -51,7 +51,7 @@ def register(request):
         messages.success(request, 'Registration successful. Please log in.')
         return redirect('auth:login')
 
-    return render(request, 'admin_panel/register.html')
+    return render(request, 'user_auth/register.html')
 
 from .models import Profile
 
