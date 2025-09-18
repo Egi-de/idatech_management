@@ -769,3 +769,4 @@ document.addEventListener("DOMContentLoaded", function () {
   // Attach delete listeners on initial load
   attachDeleteListeners();
 });
+
