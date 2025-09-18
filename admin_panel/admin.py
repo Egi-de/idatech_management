@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry, StudentProfile, EnrollmentDetail, AttendanceParticipation, PerformanceGrades, ActivitiesAchievements, FeedbackEvaluation, StatusRecommendations
+from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry, AttendanceParticipation, PerformanceGrades, ActivitiesAchievements, FeedbackEvaluation, StatusRecommendations
 
 @admin.register(Student)
 class StudentAdmin(admin.ModelAdmin):
@@ -35,17 +35,6 @@ class TrashBinEntryAdmin(admin.ModelAdmin):
     list_display = ('user', 'item_type', 'item_id', 'deleted_at')
     list_filter = ('deleted_at',)
     search_fields = ('item_type',)
-
-@admin.register(StudentProfile)
-class StudentProfileAdmin(admin.ModelAdmin):
-    list_display = ('student', 'name', 'email')
-    search_fields = ('name', 'email')
-
-@admin.register(EnrollmentDetail)
-class EnrollmentDetailAdmin(admin.ModelAdmin):
-    list_display = ('student', 'type', 'program', 'level')
-    list_filter = ('type', 'program')
-    search_fields = ('student__name',)
 
 @admin.register(AttendanceParticipation)
 class AttendanceParticipationAdmin(admin.ModelAdmin):

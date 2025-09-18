@@ -27,4 +27,31 @@ urlpatterns = [
     path('export-student-report-excel/<int:student_id>/', views.export_student_report_excel, name='export_student_report_excel'),
     path('email-student-report/<int:student_id>/', views.email_student_report, name='email_student_report'),
     path('bulk-delete-students/', views.bulk_delete_students, name='bulk_delete_students'),
+    # Attendance
+    path('add-attendance/', views.add_attendance, name='add_attendance'),
+    path('edit-attendance/<int:pk>/', views.edit_attendance, name='edit_attendance'),
+    path('delete-attendance/<int:pk>/', views.delete_attendance, name='delete_attendance'),
+     # Performance
+    path('add-performance/', views.add_performance, name='add_performance'),
+    path('edit-performance/<int:pk>/', views.edit_performance, name='edit_performance'),
+    path('delete-performance/<int:pk>/', views.delete_performance, name='delete_performance'),
+
+    path('attendance/', views.attendance_list, name='attendance_list'),
+    path('performance/', views.performance_list, name='performance_list'),
+    path('activities/', views.activities_list, name='activities_list'),
+    path('feedback/', views.feedback_list, name='feedback_list'),
+    path('status/', views.status_list, name='status_list'),
+
+    path('add-activities/', views.add_activities, name='add_activities'),
+    path('edit-activities/<int:pk>/', views.edit_activities, name='edit_activities'),
+    path('delete-activities/<int:pk>/', views.delete_activities, name='delete_activities'),
+
+    path('add-feedback/', views.add_feedback, name='add_feedback'),
+    path('edit-feedback/<int:pk>/', views.edit_feedback, name='edit_feedback'),
+    path('delete-feedback/<int:pk>/', views.delete_feedback, name='delete_feedback'),
+
+    path('add-status/', views.add_status, name='add_status'),
+    path('edit-status/<int:pk>/', views.edit_status, name='edit_status'),
+    path('delete-status/<int:pk>/', views.delete_status, name='delete_status'),
 ]
+

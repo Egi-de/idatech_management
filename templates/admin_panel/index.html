@@ -278,49 +278,42 @@
     class="mt-2 space-y-1 bg-gray-50 rounded-md shadow-inner border border-gray-200 hidden"
   >
     <li>
-      <a href="/?section=student-profile"
+      <a href="/?section=students"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
-        Student Profile
+        Students
       </a>
     </li>
     <li>
-      <a href="/?section=enrollment"
-        class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
-      >
-        Enrollment Details
-      </a>
-    </li>
-    <li>
-      <a href="/?section=attendance"
+      <a href="/?section=attendance-section"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
         Attendance & Participation
       </a>
     </li>
     <li>
-      <a href="/?section=performance"
+      <a href="/?section=performance-section"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
         Performance / Grades
       </a>
     </li>
     <li>
-      <a href="/?section=activities"
+      <a href="/?section=activities-section"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
         Activities & Achievements
       </a>
     </li>
     <li>
-      <a href="/?section=feedback"
+      <a href="/?section=feedback-section"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
         Feedback & Evaluation
       </a>
     </li>
     <li>
-      <a href="/?section=status"
+      <a href="/?section=status-section"
         class="block px-3 py-2 rounded-md text-gray-600 hover:bg-blue-100 hover:text-blue-700 transition"
       >
         Status & Recommendations
@@ -569,6 +562,7 @@
                  id="add-student-btn"
                   class="bg-green-500 text-white px-2 py-0.5 rounded hover:bg-green-600"
                   type="button"
+                  onclick="goToStep1()"
                 >
                  <i class="fas fa-plus mr-2"></i>Add Student
                 </button>
@@ -692,6 +686,190 @@
              </div>
             </div>
           </section>
+        
+<!-- Attendance & Participation Section -->
+<div id="attendance-section" class="section hidden">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Attendance & Participation</h2>
+    <button onclick="openModal('attendance-modal')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add Attendance</button>
+  </div>
+
+  <table class="min-w-full bg-white border rounded">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">Student</th>
+        <th class="py-2 px-4 border-b">Total Sessions</th>
+        <th class="py-2 px-4 border-b">Attended</th>
+        <th class="py-2 px-4 border-b">Absences</th>
+        <th class="py-2 px-4 border-b">Participation Score</th>
+        <th class="py-2 px-4 border-b">Attendance %</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for record in attendance_records %}
+      <tr>
+        <td class="py-2 px-4 border-b">{{ record.student.name }}</td>
+        <td class="py-2 px-4 border-b">{{ record.total_sessions }}</td>
+        <td class="py-2 px-4 border-b">{{ record.attended_sessions }}</td>
+        <td class="py-2 px-4 border-b">{{ record.absences }}</td>
+        <td class="py-2 px-4 border-b">{{ record.participation_score }}</td>
+        <td class="py-2 px-4 border-b">{{ record.attendance_percentage|floatformat:2 }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Performance Section -->
+<div id="performance-section" class="section hidden">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Performance / Grades</h2>
+    <button onclick="openModal('performance-modal')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add Performance</button>
+  </div>
+
+  <table class="min-w-full bg-white border rounded">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">Student</th>
+        <th class="py-2 px-4 border-b">Average Scores</th>
+        <th class="py-2 px-4 border-b">Project Completion %</th>
+        <th class="py-2 px-4 border-b">Certifications</th>
+        <th class="py-2 px-4 border-b">Progress Data</th>
+        <th class="py-2 px-4 border-b">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for performance in performances %}
+      <tr>
+        <td class="py-2 px-4 border-b">{{ performance.student.name }}</td>
+        <td class="py-2 px-4 border-b">{{ performance.avg_scores }}</td>
+        <td class="py-2 px-4 border-b">{{ performance.project_completion_rate }}%</td>
+        <td class="py-2 px-4 border-b">{{ performance.certifications }}</td>
+        <td class="py-2 px-4 border-b">{{ performance.progress_graph_data }}</td>
+        <td class="py-2 px-4 border-b flex space-x-2">
+          <button  class="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</button>
+          <form method="post" action="{% url 'admin_panel:delete_performance' performance.id %}" onsubmit="return confirm('Are you sure?');">
+            {% csrf_token %}
+            <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Activities & Achievements Section -->
+<div id="activities-section" class="section hidden">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Activities & Achievements</h2>
+    <button onclick="openModal('activities-modal')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add Activity</button>
+  </div>
+
+  <table class="min-w-full bg-white border rounded">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">Student</th>
+        <th class="py-2 px-4 border-b">Hackathons Attended</th>
+        <th class="py-2 px-4 border-b">Awards</th>
+        <th class="py-2 px-4 border-b">Contributions</th>
+        <th class="py-2 px-4 border-b">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for activity in activities %}
+      <tr>
+        <td class="py-2 px-4 border-b">{{ activity.student.name }}</td>
+        <td class="py-2 px-4 border-b">{{ activity.hackathons_attended }}</td>
+        <td class="py-2 px-4 border-b">{{ activity.awards }}</td>
+        <td class="py-2 px-4 border-b">{{ activity.contributions }}</td>
+        <td class="py-2 px-4 border-b flex space-x-2">
+          <button  class="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</button>
+          <form method="post" action="{% url 'admin_panel:delete_activities' activity.id %}" onsubmit="return confirm('Are you sure?');">
+            {% csrf_token %}
+            <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!--feedback section-->
+<div id="feedback-section" class="section hidden">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Feedback & Evaluation</h2>
+    <button onclick="openModal('feedback-modal')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add Feedback</button>
+  </div>
+
+  <table class="min-w-full bg-white border rounded">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">Student</th>
+        <th class="py-2 px-4 border-b">Mentor Comments</th>
+        <th class="py-2 px-4 border-b">Peer Reviews</th>
+        <th class="py-2 px-4 border-b">Strengths</th>
+        <th class="py-2 px-4 border-b">Areas for Improvement</th>
+        <th class="py-2 px-4 border-b">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for feedback in feedbacks %}
+      <tr>
+        <td class="py-2 px-4 border-b">{{ feedback.student.name }}</td>
+        <td class="py-2 px-4 border-b">{{ feedback.mentor_comments }}</td>
+        <td class="py-2 px-4 border-b">{{ feedback.peer_reviews }}</td>
+        <td class="py-2 px-4 border-b">{{ feedback.strengths }}</td>
+        <td class="py-2 px-4 border-b">{{ feedback.areas_for_improvement }}</td>
+        <td class="py-2 px-4 border-b flex space-x-2">
+          <button  class="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</button>
+          <form method="post" action="{% url 'admin_panel:delete_feedback' feedback.id %}" onsubmit="return confirm('Are you sure?');">
+            {% csrf_token %}
+            <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<!-- Status & Recommendations Section -->
+<div id="status-section" class="section hidden">
+  <div class="flex justify-between items-center mb-4">
+    <h2 class="text-xl font-semibold">Status & Recommendations</h2>
+    <button onclick="openModal('status-modal')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add Status</button>
+  </div>
+
+  <table class="min-w-full bg-white border rounded">
+    <thead>
+      <tr class="bg-gray-100">
+        <th class="py-2 px-4 border-b">Student</th>
+        <th class="py-2 px-4 border-b">Current Status</th>
+        <th class="py-2 px-4 border-b">Next Steps</th>
+        <th class="py-2 px-4 border-b">Graduation Eligibility</th>
+        <th class="py-2 px-4 border-b">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for status in statuses %}
+      <tr>
+        <td class="py-2 px-4 border-b">{{ status.student.name }}</td>
+        <td class="py-2 px-4 border-b">{{ status.current_status }}</td>
+        <td class="py-2 px-4 border-b">{{ status.next_steps }}</td>
+        <td class="py-2 px-4 border-b">{{ status.graduation_eligibility|yesno:"Yes,No" }}</td>
+        <td class="py-2 px-4 border-b flex space-x-2">
+          <button  class="px-2 py-1 bg-yellow-400 text-white rounded hover:bg-yellow-500">Edit</button>
+          <form method="post" action="{% url 'admin_panel:delete_status' status.id %}" onsubmit="return confirm('Are you sure?');">
+            {% csrf_token %}
+            <button type="submit" class="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+
+
           <!-- Employees Section -->
           <section id="employees" class="section hidden">
            <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
@@ -979,11 +1157,14 @@
                     </div>
                   </div>
                   <div class="space-y-2 mb-4">
-                    <p class="text-sm"><strong>Program:</strong> {{ student.get_program_display }}</p>
-                    <p class="text-sm"><strong>Level:</strong> {{ student.level }}</p>
-                    <p class="text-sm"><strong>Attendance:</strong> {{ student.attendance_percentage|floatformat:1 }}%</p>
-                   <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
-                  </div>
+  <p class="text-sm"><strong>Program:</strong> {{ student.get_program_display }}</p>
+  <p class="text-sm"><strong>Level:</strong> {{ student.level|capfirst }}</p>
+ {% with student.attendanceparticipation as attendance %}
+  <p class="text-sm"><strong>Attendance:</strong> {{ attendance.attendance_percentage|floatformat:1 }}%</p>
+ {% endwith %}
+  <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
+</div>
+
                   <div class="flex space-x-2">
                     <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex-1 text-center">
                       <i class="fas fa-eye mr-1"></i>View Report
@@ -1023,125 +1204,65 @@
 
       <!-- Modals -->
       <!-- Add Student Modal -->
-      <div
-        id="student-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm"
-      >
-        <div class="bg-white rounded-lg p-6 w-96 z-60">
-          <h3 class="text-lg font-semibold mb-4">Add Student</h3>
-            <form id="student-form">
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  id="student-name"
-                  name="student-name"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Type</label>
-                <select
-                  id="student-type"
-                  name="student-type"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="trainee">Trainee</option>
-                  <option value="internee-university">
-                    Internee (University)
-                  </option>
-                  <option value="internee-highschool">
-                    Internee (High School)
-                  </option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Program</label>
-                <select
-                  id="student-program"
-                  name="student-program"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="iot">IoT</option>
-                 <option value="sod">SoD</option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Level</label>
-                <input
-                  type="text"
-                  id="student-level"
-                  name="student-level"
-                 class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-             </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Address</label>
-                <select
-                  id="student-address"
-                  name="student-address"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-               >
-                  <option value="" disabled selected>Select Address</option>
-                  <option value="Bumbogo">Bumbogo</option>
-                  <option value="Gatsata">Gatsata</option>
-                  <option value="Gikomero">Gikomero</option>
-                 <option value="Gisozi">Gisozi</option>
-                  <option value="Jabana">Jabana</option>
-                  <option value="Jali">Jali</option>
-                  <option value="Kacyiru">Kacyiru</option>
-                  <option value="Kimihurura">Kimihurura</option>
-                  <option value="Kimironko">Kimironko</option>
-                  <option value="Kinyinya">Kinyinya</option>
-                  <option value="Ndera">Ndera</option>
-                  <option value="Nduba">Nduba</option>
-                  <option value="Remera">Remera</option>
-                  <option value="Rusororo">Rusororo</option>
-                  <option value="Rutunga">Rutunga</option>
-                  <option value="Gahanga">Gahanga</option>
-                  <option value="Gatenga">Gatenga</option>
-                  <option value="Gikondo">Gikondo</option>
-                  <option value="Kagarama">Kagarama</option>
-                  <option value="Kanombe">Kanombe</option>
-                  <option value="Kicukiro">Kicukiro</option>
-                  <option value="Kigarama">Kigarama</option>
-                  <option value="Masaka">Masaka</option>
-                  <option value="Niboye">Niboye</option>
-                  <option value="Nyarugunga">Nyarugunga</option>
-                  <option value="Gitega">Gitega</option>
-                  <option value="Kanyinya">Kanyinya</option>
-                  <option value="Kigali">Kigali</option>
-                  <option value="Kimisagara">Kimisagara</option>
-                  <option value="Mageragere">Mageragere</option>
-                  <option value="Muhima">Muhima</option>
-                  <option value="Nyakabanda">Nyakabanda</option>
-                  <option value="Nyamirambo">Nyamirambo</option>
-                  <option value="Nyarugenge">Nyarugenge</option>
-                  <option value="Rwezamenyo">Rwezamenyo</option>
-                </select>
-              </div>
-              <div class="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  id="cancel-student"
-                  class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Add Student
-                </button>
-              </div>
-            </form>
+<!-- Modal Backdrop -->
+<div id="student-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm">
+  <!-- Modal Box -->
+  <div class="bg-white rounded-lg p-6 w-full max-w-md space-y-6 shadow-xl">
+    <form id="student-form" method="POST" action="{% url 'admin_panel:add_student' %}" enctype="multipart/form-data">
+  {% csrf_token %}
+
+      <!-- Step 1 -->
+      <div id="step-1" class="space-y-4">
+        <h3 class="text-lg font-semibold mb-4">Step 1: Basic Information</h3>
+        <input type="text" name="name" placeholder="Full Name" required class="w-full px-3 py-2 border rounded-lg" />
+        <input type="text" name="student_id" placeholder="Student ID" class="w-full px-3 py-2 border rounded-lg" />
+        <input type="email" name="email" placeholder="Email" class="w-full px-3 py-2 border rounded-lg" />
+        <input type="text" name="phone" placeholder="Phone" class="w-full px-3 py-2 border rounded-lg" />
+        <select name="address" class="w-full px-3 py-2 border rounded-lg" required>
+          <option value="" disabled selected>Select Address</option>
+          <option value="Kacyiru">Kacyiru</option>
+          <option value="Kimironko">Kimironko</option>
+          <!-- Add others -->
+        </select>
+        <input type="date" name="enrollment_date" class="w-full px-3 py-2 border rounded-lg" />
+        <input type="file" name="photo" class="w-full px-3 py-2 border rounded-lg" />
+        <div class="flex justify-end">
+          <button type="button" onclick="goToStep2()" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+            Next
+          </button>
         </div>
       </div>
 
+      <!-- Step 2 -->
+      <div id="step-2" class="space-y-4 hidden">
+        <h3 class="text-lg font-semibold mb-4">Step 2: Program Details</h3>
+        <select name="type" class="w-full px-3 py-2 border rounded-lg">
+          <option value="trainee">Trainee</option>
+          <option value="internee-university">Internee (University)</option>
+          <option value="internee-highschool">Internee (High School)</option>
+        </select>
+        <input type="text" name="category" placeholder="Category (optional)" class="w-full px-3 py-2 border rounded-lg" />
+        <select name="program" class="w-full px-3 py-2 border rounded-lg">
+          <option value="iot">IoT</option>
+          <option value="sod">SoD</option>
+        </select>
+        <select name="level" class="w-full px-3 py-2 border rounded-lg">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="excellent">Excellent</option>
+        </select>
+        <div class="flex justify-between">
+          <button type="button" onclick="goToStep1()" class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50">
+            Back
+          </button>
+          <button type="submit" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Submit
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
       <!-- Add Employee Modal -->
       <div
         id="employee-modal"
@@ -1208,6 +1329,148 @@
           </form>
         </div>
       </div>
+<!-- Add Performance Modal -->
+<div id="performance-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <h3 class="text-lg font-semibold mb-4">Add Performance / Grades</h3>
+    <form method="post" action="{% url 'admin_panel:add_performance' %}">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Student</label>
+        <select name="student" class="w-full px-3 py-2 border rounded-lg" required>
+          {% for student in students %}
+          <option value="{{ student.id }}">{{ student.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Average Scores</label>
+        <input type="number" step="0.01" name="avg_scores" class="w-full px-3 py-2 border rounded-lg" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Project Completion %</label>
+        <input type="number" step="0.01" name="project_completion_rate" class="w-full px-3 py-2 border rounded-lg" required>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Certifications</label>
+        <textarea name="certifications" class="w-full px-3 py-2 border rounded-lg" rows="3"></textarea>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Progress Graph Data (JSON)</label>
+        <textarea name="progress_graph_data" class="w-full px-3 py-2 border rounded-lg" rows="3" placeholder='[{"date": "2025-09-18", "score": 85.5}]'></textarea>
+      </div>
+
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('performance-modal')" class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Add activities modal -->
+<div id="activities-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <h3 class="text-lg font-semibold mb-4">Add Activities & Achievements</h3>
+    <form method="post" action="{% url 'admin_panel:add_activities' %}">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Student</label>
+        <select name="student" class="w-full px-3 py-2 border rounded-lg" required>
+          {% for student in students %}
+          <option value="{{ student.id }}">{{ student.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Hackathons Attended</label>
+        <textarea name="hackathons_attended" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Awards</label>
+        <textarea name="awards" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Contributions</label>
+        <textarea name="contributions" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('activities-modal')" class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Add feedback modal-->
+<div id="feedback-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <h3 class="text-lg font-semibold mb-4">Add Feedback & Evaluation</h3>
+    <form method="post" action="{% url 'admin_panel:add_feedback' %}">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Student</label>
+        <select name="student" class="w-full px-3 py-2 border rounded-lg" required>
+          {% for student in students %}
+          <option value="{{ student.id }}">{{ student.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Mentor Comments</label>
+        <textarea name="mentor_comments" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Peer Reviews</label>
+        <textarea name="peer_reviews" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Strengths</label>
+        <textarea name="strengths" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Areas for Improvement</label>
+        <textarea name="areas_for_improvement" class="w-full px-3 py-2 border rounded-lg"></textarea>
+      </div>
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeModal('feedback-modal')" class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50">Cancel</button>
+        <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">Add</button>
+      </div>
+    </form>
+  </div>
+</div>
+<!-- Add Status & Recommendations Modal -->
+<div id="status-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white rounded-lg p-6 w-full max-w-md">
+    <h3 class="text-lg font-semibold mb-4">Add Status & Recommendations</h3>
+    <form method="post" action="{% url 'admin_panel:add_status' %}">
+      {% csrf_token %}
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Student</label>
+        <select name="student" class="w-full px-3 py-2 border rounded-lg" required>
+          {% for student in students %}
+          <option value="{{ student.id }}">{{ student.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Current Status</label>
+        <select name="current_status" class="w-full px-3 py-2 border rounded-lg">
+          <option value="active">Active</option>
+          <option value="graduated">Graduated</option>
+          <option value="dropped">Dropped</option>
+          <option value="on_hold">On Hold</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label class="block text-sm font-medium mb-2">Next Steps</label>
+        <textarea name="next_steps" class="w-full px-3 py-2 border rounded-lg"></textarea
+      </div>
+    </div>
+  </div>
+  </div>
 
       <script src="{% static 'script.js' %}"></script>
       <script src="{% static 'ui-interactions.js' %}"></script>
@@ -1262,9 +1525,47 @@
     chevron.classList.toggle("rotate-180");
   }
 </script>
+<script>
+  function goToStep2() {
+    document.getElementById('step-1').classList.add('hidden');
+    document.getElementById('step-2').classList.remove('hidden');
+  }
+
+  function goToStep1() {
+    document.getElementById('step-2').classList.add('hidden');
+    document.getElementById('step-1').classList.remove('hidden');
+  }
+</script>
+<script>
+  document.querySelectorAll('.filter-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const filter = button.getAttribute('data-filter');
+      const rows = document.querySelectorAll('#students-table tr');
+
+      rows.forEach(row => {
+        const type = row.querySelector('td:nth-child(3)').textContent.trim().toLowerCase();
+        const program = row.querySelector('td:nth-child(5)').textContent.trim().toLowerCase();
+
+        if (filter === 'all') {
+          row.classList.remove('hidden');
+        } else if (filter === 'trainees' && type === 'trainee') {
+          row.classList.remove('hidden');
+        } else if (filter === 'internees' && type.includes('internee')) {
+          row.classList.remove('hidden');
+        } else if (filter === 'iot' && program === 'iot') {
+          row.classList.remove('hidden');
+        } else if (filter === 'sod' && program === 'sod') {
+          row.classList.remove('hidden');
+        } else {
+          row.classList.add('hidden');
+        }
+      });
+    });
+  });
+</script>
 
 
-      {% csrf_token %}
-    </div>
+
+{% csrf_token %}
   </body>
 </html>

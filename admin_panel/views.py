@@ -3,7 +3,7 @@ from django.views.decorators.http import require_POST
 from django.db.models import Sum, Q
 from django.http import JsonResponse, HttpResponse
 from django.middleware.csrf import get_token
-from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry
+from .models import Student, Employee, Expense, Transaction, RecentActivity, TrashBinEntry, AttendanceParticipation, PerformanceGrades, ActivitiesAchievements, FeedbackEvaluation, StatusRecommendations
 from django.contrib.auth.decorators import login_required
 from user_auth.models import Profile
 import json
@@ -17,6 +17,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 import openpyxl
 from django.core.mail import EmailMessage
+from django.contrib import messages
 
 @login_required
 def dashboard(request):
@@ -85,6 +86,24 @@ def dashboard(request):
     else:
         students = Student.objects.all().order_by('name')
 
+    # Student sorting
+    sort = request.GET.get('sort', 'name_asc')
+    if sort == 'name_asc':
+        students = Student.objects.order_by('name')
+    elif sort == 'name_desc':
+        students = Student.objects.order_by('-name')
+    elif sort == 'date_asc':
+        students = Student.objects.order_by('enrollment_date')
+    elif sort == 'date_desc':
+        students = Student.objects.order_by('-enrollment_date')
+    else:
+        students = Student.objects.order_by('name') 
+
+    search_query = request.GET.get('search')
+    if search_query:
+       students = students.filter(name__icontains=search_query)
+       
+
     employees = Employee.objects.all()
     expenses = Expense.objects.all()
 
@@ -103,10 +122,16 @@ def dashboard(request):
         'recent_transactions': recent_transactions,
         'recent_activities': recent_activities,
         'students': students,
+        'sort': sort,
         'employees': employees,
         'expenses': expenses,
         'profile': profile,
         'user_list': user_list,
+        "attendances": AttendanceParticipation.objects.all(),
+        "performances": PerformanceGrades.objects.all(),
+        "activities": ActivitiesAchievements.objects.all(),
+        "feedbacks": FeedbackEvaluation.objects.all(),
+        "statuses": StatusRecommendations.objects.all(),
     }
 
     if request.headers.get('x-requested-with') == 'XMLHttpRequest':
@@ -249,49 +274,64 @@ def add_student(request):
     def generate_unique_student_id():
         return str(uuid.uuid4())[:8]  # Short unique ID
 
-    name = request.POST.get('student-name')
-    type_ = request.POST.get('student-type')
-    program = request.POST.get('student-program')
-    level = request.POST.get('student-level')
-    address = request.POST.get('student-address')
-    if name and type_ and program and level and address:
-        student_id = generate_unique_student_id()
-        student = Student.objects.create(
-            name=name,
-            student_id=student_id,
-            type=type_,
-            program=program,
-            level=level,
-            address=address,
-        )
-        # Create recent activity
-        RecentActivity.objects.create(
-            user=request.user,
-            action=f"New trainee {student.name} added to {student.get_program_display()} program",
-            icon_class="fas fa-plus-circle text-green-500"
-        )
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            # AJAX request
-            total_students = Student.objects.count()
-            iot_students = Student.objects.filter(program='iot').count()
-            sod_students = Student.objects.filter(program='sod').count()
-            return JsonResponse({
-                'success': True,
-            'student': {
-                'id': student.id,
-                'name': student.name,
-                'type': student.get_type_display(),
-                'category': student.category,
-                'address': student.address,
-                'program': student.get_program_display(),
-                'level': student.level,
-            },
-                'counts': {
-                    'total_students': total_students,
-                    'iot_students': iot_students,
-                    'sod_students': sod_students,
-                }
-            })
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        type_ = request.POST.get('type')
+        program = request.POST.get('program')
+        level = request.POST.get('level')
+        address = request.POST.get('address')
+        category = request.POST.get('category')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        enrollment_date = request.POST.get('enrollment_date')
+        photo = request.FILES.get('photo')
+
+        if name and type_ and program and level and address:
+            student_id = generate_unique_student_id()
+            student = Student.objects.create(
+                name=name,
+                student_id=student_id,
+                type=type_,
+                program=program,
+                level=level,
+                address=address,
+                category=category,
+                email=email,
+                phone=phone,
+                enrollment_date=enrollment_date,
+                photo=photo
+            )
+
+            # Log recent activity
+            RecentActivity.objects.create(
+                user=request.user,
+                action=f"New trainee {student.name} added to {student.get_program_display()} program",
+                icon_class="fas fa-plus-circle text-green-500"
+            )
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                total_students = Student.objects.count()
+                iot_students = Student.objects.filter(program='iot').count()
+                sod_students = Student.objects.filter(program='sod').count()
+
+                return JsonResponse({
+                    'success': True,
+                    'student': {
+                        'id': student.id,
+                        'name': student.name,
+                        'type': student.get_type_display(),
+                        'category': student.category,
+                        'address': student.address,
+                        'program': student.get_program_display(),
+                        'level': student.level,
+                    },
+                    'counts': {
+                        'total_students': total_students,
+                        'iot_students': iot_students,
+                        'sod_students': sod_students,
+                    }
+                })
+
     return redirect('admin_panel:dashboard')
 
 @require_POST
@@ -731,3 +771,208 @@ def trash_bin(request):
         'trash_entries': trash_entries,
     }
     return render(request, 'user_auth/trash_bin.html', context)
+
+
+def add_attendance(request):
+    students = Student.objects.all()
+    if request.method == 'POST':
+        student_id = request.POST.get('student')
+        student = get_object_or_404(Student, id=student_id)
+        attendance, created = AttendanceParticipation.objects.get_or_create(student=student)
+        attendance.total_sessions = request.POST.get('total_sessions')
+        attendance.attended_sessions = request.POST.get('attended_sessions')
+        attendance.absences = request.POST.get('absences')
+        attendance.participation_score = request.POST.get('participation_score')
+        attendance.save()
+        messages.success(request, "Attendance saved successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/attendance.html', {'students': students})
+
+def edit_attendance(request, pk):
+    attendance = get_object_or_404(AttendanceParticipation, pk=pk)
+    students = Student.objects.all()
+    if request.method == 'POST':
+        attendance.student_id = request.POST.get('student')
+        attendance.total_sessions = request.POST.get('total_sessions')
+        attendance.attended_sessions = request.POST.get('attended_sessions')
+        attendance.absences = request.POST.get('absences')
+        attendance.participation_score = request.POST.get('participation_score')
+        attendance.save()
+        messages.success(request, "Attendance updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/edit_attendance.html', {'attendance': attendance, 'students': students})
+
+def delete_attendance(request, pk):
+    attendance = get_object_or_404(AttendanceParticipation, pk=pk)
+    attendance.delete()
+    messages.success(request, "Attendance deleted successfully.")
+    return redirect(request.META.get('HTTP_REFERER'))
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from .models import PerformanceGrades, Student
+
+def add_performance(request):
+    students = Student.objects.all()
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=request.POST.get('student'))
+        performance, created = PerformanceGrades.objects.get_or_create(student=student)
+        performance.avg_scores = request.POST.get('avg_scores')
+        performance.project_completion_rate = request.POST.get('project_completion_rate')
+        performance.certifications = request.POST.get('certifications')
+        progress_data = request.POST.get('progress_graph_data')
+        if progress_data:
+            import json
+            performance.progress_graph_data = json.loads(progress_data)
+        performance.save()
+        messages.success(request, "Performance added successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/performance.html', {'students': students})
+
+def edit_performance(request, pk):
+    performance = get_object_or_404(PerformanceGrades, pk=pk)
+    students = Student.objects.all()
+    if request.method == 'POST':
+        performance.student_id = request.POST.get('student')
+        performance.avg_scores = request.POST.get('avg_scores')
+        performance.project_completion_rate = request.POST.get('project_completion_rate')
+        performance.certifications = request.POST.get('certifications')
+        progress_data = request.POST.get('progress_graph_data')
+        if progress_data:
+            import json
+            performance.progress_graph_data = json.loads(progress_data)
+        performance.save()
+        messages.success(request, "Performance updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/edit_performance.html', {'performance': performance, 'students': students})
+
+def delete_performance(request, pk):
+    performance = get_object_or_404(PerformanceGrades, pk=pk)
+    performance.delete()
+    messages.success(request, "Performance deleted successfully.")
+    return redirect(request.META.get('HTTP_REFERER'))
+
+# attendance list
+def attendance_list(request):
+    attendance_records = AttendanceParticipation.objects.select_related('student').all()
+    return render(request, 'admin_panel/attendance.html', {'attendance_records': attendance_records})
+
+# Performance List
+def performance_list(request):
+    performances = PerformanceGrades.objects.select_related('student').all()
+    return render(request, 'admin_panel/performance.html', {'performances': performances})
+
+# Activities List
+def activities_list(request):
+    activities = ActivitiesAchievements.objects.select_related('student').all()
+    return render(request, 'admin_panel/activities.html', {'activities': activities})
+
+# Feedback List
+def feedback_list(request):
+    feedbacks = FeedbackEvaluation.objects.select_related('student').all()
+    return render(request, 'admin_panel/feedback.html', {'feedbacks': feedbacks})
+
+# Status List
+def status_list(request):
+    statuses = StatusRecommendations.objects.select_related('student').all()
+    return render(request, 'admin_panel/status.html', {'statuses': statuses})
+# Activities & Achievements
+
+def add_activities(request):
+    students = Student.objects.all()
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=request.POST.get('student'))
+        activities, created = ActivitiesAchievements.objects.get_or_create(student=student)
+        activities.hackathons_attended = request.POST.get('hackathons_attended')
+        activities.awards = request.POST.get('awards')
+        activities.contributions = request.POST.get('contributions')
+        activities.save()
+        messages.success(request, "Activities added successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/activities.html', {'students': students})
+
+def edit_activities(request, pk):
+    activities = get_object_or_404(ActivitiesAchievements, pk=pk)
+    students = Student.objects.all()
+    if request.method == 'POST':
+        activities.student_id = request.POST.get('student')
+        activities.hackathons_attended = request.POST.get('hackathons_attended')
+        activities.awards = request.POST.get('awards')
+        activities.contributions = request.POST.get('contributions')
+        activities.save()
+        messages.success(request, "Activities updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/edit_activities.html', {'activities': activities, 'students': students})
+
+def delete_activities(request, pk):
+    activities = get_object_or_404(ActivitiesAchievements, pk=pk)
+    activities.delete()
+    messages.success(request, "Activities deleted successfully.")
+    return redirect(request.META.get('HTTP_REFERER'))
+# Feedback & Evaluation
+
+def add_feedback(request):
+    students = Student.objects.all()
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=request.POST.get('student'))
+        feedback, created = FeedbackEvaluation.objects.get_or_create(student=student)
+        feedback.mentor_comments = request.POST.get('mentor_comments')
+        feedback.peer_reviews = request.POST.get('peer_reviews')
+        feedback.strengths = request.POST.get('strengths')
+        feedback.areas_for_improvement = request.POST.get('areas_for_improvement')
+        feedback.save()
+        messages.success(request, "Feedback added successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/feedback.html', {'students': students})
+
+def edit_feedback(request, pk):
+    feedback = get_object_or_404(FeedbackEvaluation, pk=pk)
+    students = Student.objects.all()
+    if request.method == 'POST':
+        feedback.student_id = request.POST.get('student')
+        feedback.mentor_comments = request.POST.get('mentor_comments')
+        feedback.peer_reviews = request.POST.get('peer_reviews')
+        feedback.strengths = request.POST.get('strengths')
+        feedback.areas_for_improvement = request.POST.get('areas_for_improvement')
+        feedback.save()
+        messages.success(request, "Feedback updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/edit_feedback.html', {'feedback': feedback, 'students': students})
+
+def delete_feedback(request, pk):
+    feedback = get_object_or_404(FeedbackEvaluation, pk=pk)
+    feedback.delete()
+    messages.success(request, "Feedback deleted successfully.")
+    return redirect(request.META.get('HTTP_REFERER'))
+# Status & Recommendations
+
+def add_status(request):
+    students = Student.objects.all()
+    if request.method == 'POST':
+        student = get_object_or_404(Student, id=request.POST.get('student'))
+        status, created = StatusRecommendations.objects.get_or_create(student=student)
+        status.current_status = request.POST.get('current_status')
+        status.next_steps = request.POST.get('next_steps')
+        status.graduation_eligibility = request.POST.get('graduation_eligibility') == 'on'
+        status.save()
+        messages.success(request, "Status added successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/status.html', {'students': students})
+
+def edit_status(request, pk):
+    status = get_object_or_404(StatusRecommendations, pk=pk)
+    students = Student.objects.all()
+    if request.method == 'POST':
+        status.student_id = request.POST.get('student')
+        status.current_status = request.POST.get('current_status')
+        status.next_steps = request.POST.get('next_steps')
+        status.graduation_eligibility = request.POST.get('graduation_eligibility') == 'on'
+        status.save()
+        messages.success(request, "Status updated successfully.")
+        return redirect(request.META.get('HTTP_REFERER'))
+    return render(request, 'admin_panel/edit_status.html', {'status': status, 'students': students})
+
+def delete_status(request, pk):
+    status = get_object_or_404(StatusRecommendations, pk=pk)
+    status.delete()
+    messages.success(request, "Status deleted successfully.")
+    return redirect(request.META.get('HTTP_REFERER'))

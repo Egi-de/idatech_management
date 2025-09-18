@@ -770,3 +770,15 @@ document.addEventListener("DOMContentLoaded", function () {
   attachDeleteListeners();
 });
 
+  function goToStep2() {
+    document.getElementById('step-1').classList.add('hidden');
+    document.getElementById('step-2').classList.remove('hidden');
+  }
+
+  function goToStep1() {
+    document.getElementById('step-2').classList.add('hidden');
+    document.getElementById('step-1').classList.remove('hidden');
+  }
+
+
+
