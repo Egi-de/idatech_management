@@ -310,7 +310,7 @@
               <li>
                 <a
                   href="{% url 'auth:settings' %}"
-                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:bg-blue-100 focus:text-blue-700 transition"
+                  class="nav-btn flex items-center w-full px-3 py-2 rounded-md text-gray-700 hover:bg-blue-100 hover:text-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-md p-2"
                   title="Settings"
                 >
                   <i class="fas fa-cog w-5 mr-3 text-blue-600"></i>
@@ -646,74 +646,179 @@
           <section id="employees" class="section hidden">
             <h2 class="text-2xl font-bold mb-6">Employee Management</h2>
 
-            <div class="mb-6 flex justify-between items-center">
-              <div class="flex space-x-4">
+            <!-- Filters and Search -->
+            <div class="mb-6 space-y-4">
+              <div class="flex flex-wrap gap-4 items-center">
                 <input
                   type="text"
                   id="employee-search"
                   placeholder="Search employees..."
-                  class="px-4 py-2 border rounded-lg"
+                  class="px-4 py-2 border rounded-lg flex-1 min-w-64"
                 />
+                <select id="employee-department-filter" class="px-4 py-2 border rounded-lg">
+                  <option value="">All Departments</option>
+                  {% for dept in employees|dictsort:"department" %}
+                    {% if dept.department %}
+                      <option value="{{ dept.department }}">{{ dept.department }}</option>
+                    {% endif %}
+                  {% empty %}
+                    <option value="IT">IT</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Operations">Operations</option>
+                    <option value="Sales">Sales</option>
+                  {% endfor %}
+                </select>
+                <select id="employee-status-filter" class="px-4 py-2 border rounded-lg">
+                  <option value="">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="on_leave">On Leave</option>
+                  <option value="terminated">Terminated</option>
+                  <option value="inactive">Inactive</option>
+                </select>
+                <select id="employee-sort" class="px-4 py-2 border rounded-lg">
+                  <option value="name_asc">Name A-Z</option>
+                  <option value="name_desc">Name Z-A</option>
+                  <option value="position_asc">Position A-Z</option>
+                  <option value="position_desc">Position Z-A</option>
+                  <option value="department_asc">Department A-Z</option>
+                  <option value="department_desc">Department Z-A</option>
+                  <option value="salary_asc">Salary Low-High</option>
+                  <option value="salary_desc">Salary High-Low</option>
+                  <option value="hire_date_asc">Hire Date Old-New</option>
+                  <option value="hire_date_desc">Hire Date New-Old</option>
+                </select>
+                <button id="clear-employee-filters" class="px-4 py-2 bg-gray-200 rounded-lg hover:bg-gray-300">
+                  Clear Filters
+                </button>
               </div>
-              <button
-                id="add-employee-btn"
-                class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
-              >
-                <i class="fas fa-plus mr-2"></i>Add Employee
-              </button>
+
+              <!-- Bulk Operations -->
+              <div class="flex justify-between items-center">
+                <div class="flex space-x-2">
+                  <button id="select-all-employees" class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 hidden">
+                    Select All
+                  </button>
+                  <button id="bulk-edit-employees" class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600 hidden disabled">
+                    Bulk Edit
+                  </button>
+                  <button id="bulk-delete-employees" class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 hidden disabled">
+                    Bulk Delete
+                  </button>
+                  <button id="export-employees" class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600">
+                    Export
+                  </button>
+                </div>
+                <button
+                  id="add-employee-btn"
+                  class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                >
+                  <i class="fas fa-plus mr-2"></i>Add Employee
+                </button>
+              </div>
             </div>
 
+            <!-- Loading State -->
+            <div id="employees-loading" class="hidden text-center py-8">
+              <i class="fas fa-spinner fa-spin text-2xl text-blue-500"></i>
+              <p class="mt-2 text-gray-600">Loading employees...</p>
+            </div>
+
+            <!-- Employees Table -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
               <div class="overflow-x-auto max-w-full">
                 <table class="w-full">
                   <thead class="bg-gray-50">
                     <tr>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase w-12">
+                        <input type="checkbox" id="select-all-employees-checkbox" class="hidden">
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Photo
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Employee ID
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Name
                       </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Email
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Phone
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Position
                       </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Department
                       </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Status
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        Hire Date
+                      </th>
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Salary
                       </th>
-                      <th
-                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"
-                      >
+                      <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         Actions
                       </th>
                     </tr>
                   </thead>
                   <tbody id="employees-table" class="divide-y divide-gray-200">
                     {% for employee in employees %}
-                    <tr>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.name }}
+                    <tr class="hover:bg-gray-50">
+                      <td class="px-4 py-4 whitespace-nowrap">
+                        <input type="checkbox" class="employee-checkbox hidden" value="{{ employee.id }}">
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
+                        {% if employee.profile_photo %}
+                          <img src="{{ employee.profile_photo.url }}" alt="Profile" class="w-10 h-10 rounded-full object-cover">
+                        {% else %}
+                          <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-gray-400"></i>
+                          </div>
+                        {% endif %}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ employee.employee_id|default:"N/A" }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">{{ employee.full_name }}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ employee.email|default:"N/A" }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ employee.phone|default:"N/A" }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {{ employee.position }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        {{ employee.department }}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ employee.department_color }}-100 text-{{ employee.department_color }}-800">
+                          {{ employee.department }}
+                        </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        ${{ employee.salary }}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-{{ employee.status_color }}-100 text-{{ employee.status_color }}-800">
+                          {{ employee.get_current_status_display }}
+                        </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap">
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ employee.hire_date|date:"M d, Y" }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${{ employee.salary|floatformat:2 }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a
                           href="{% url 'admin_panel:update_employee' employee.id %}"
-                          class="text-indigo-600 hover:text-indigo-900 mr-2"
+                          class="text-indigo-600 hover:text-indigo-900 mr-3"
                           >Edit</a
                         >
                         <form
@@ -734,13 +839,33 @@
                     </tr>
                     {% empty %}
                     <tr>
-                      <td colspan="5" class="text-center py-4">
-                        No employees found.
+                      <td colspan="12" class="text-center py-8">
+                        <div class="text-gray-500">
+                          <i class="fas fa-users text-4xl mb-2"></i>
+                          <p>No employees found.</p>
+                        </div>
                       </td>
                     </tr>
                     {% endfor %}
                   </tbody>
                 </table>
+              </div>
+
+              <!-- Pagination -->
+              <div class="px-6 py-3 bg-gray-50 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                  <div class="text-sm text-gray-700">
+                    Showing <span id="employees-showing-start">1</span> to <span id="employees-showing-end">{{ employees|length }}</span> of <span id="employees-total">{{ employees|length }}</span> employees
+                  </div>
+                  <div class="flex space-x-1">
+                    <button id="employees-prev-page" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50" disabled>
+                      Previous
+                    </button>
+                    <button id="employees-next-page" class="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50" disabled>
+                      Next
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </section>
@@ -937,274 +1062,17 @@
                     <p class="text-sm"><strong>Status:</strong> {{ student.get_current_status_display }}</p>
                   </div>
                   <div class="flex space-x-2">
-                    <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-2 rounded text-sm hover:bg-blue-600 flex-1 text-center">
-                      <i class="fas fa-eye mr-1"></i>View Report
-                    </a>
-                    <a href="{% url 'admin_panel:export_student_report_pdf' student.id %}" class="bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600">
-                      <i class="fas fa-file-pdf"></i>
-                    </a>
-                    <a href="{% url 'admin_panel:export_student_report_excel' student.id %}" class="bg-green-500 text-white px-3 py-2 rounded text-sm hover:bg-green-600">
-                      <i class="fas fa-file-excel"></i>
-                    </a>
+                    <a href="{% url 'admin_panel:student_report_detail' student.id %}" class="bg-blue-500 text-white px-3 py-1 rounded text-sm hover:bg-blue-600">View Details</a>
                   </div>
-                </div>
-                {% empty %}
-                <div class="col-span-full text-center py-8">
-                  <i class="fas fa-graduation-cap text-4xl text-gray-300 mb-4"></i>
-                  <p class="text-gray-500">No students found.</p>
                 </div>
                 {% endfor %}
               </div>
             </div>
-
-            <!-- Employees Report Content -->
-            <div id="employees-report" class="report-section hidden">
-              <h3 class="text-xl font-semibold mb-4">Employee Reports</h3>
-              <p class="text-gray-500 text-center">Employee reports coming soon...</p>
-            </div>
-
-            <!-- Financial Report Content -->
-            <div id="financial-report" class="report-section hidden">
-              <h3 class="text-xl font-semibold mb-4">Financial Reports</h3>
-              <p class="text-gray-500 text-center">Financial reports coming soon...</p>
-            </div>
           </section>
-          {% endblock %}
         </main>
       </div>
-
-      <!-- Modals -->
-      <!-- Add Student Modal -->
-      <div
-        id="student-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 backdrop-blur-sm"
-      >
-        <div class="bg-white rounded-lg p-6 w-96 z-60">
-          <h3 class="text-lg font-semibold mb-4">Add Student</h3>
-            <form id="student-form">
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Name</label>
-                <input
-                  type="text"
-                  id="student-name"
-                  name="student-name"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Type</label>
-                <select
-                  id="student-type"
-                  name="student-type"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="trainee">Trainee</option>
-                  <option value="internee-university">
-                    Internee (University)
-                  </option>
-                  <option value="internee-highschool">
-                    Internee (High School)
-                  </option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Program</label>
-                <select
-                  id="student-program"
-                  name="student-program"
-                  class="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="iot">IoT</option>
-                  <option value="sod">SoD</option>
-                </select>
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Level</label>
-                <input
-                  type="text"
-                  id="student-level"
-                  name="student-level"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div class="mb-4">
-                <label class="block text-sm font-medium mb-2">Address</label>
-                <select
-                  id="student-address"
-                  name="student-address"
-                  class="w-full px-3 py-2 border rounded-lg"
-                  required
-                >
-                  <option value="" disabled selected>Select Address</option>
-                  <option value="Bumbogo">Bumbogo</option>
-                  <option value="Gatsata">Gatsata</option>
-                  <option value="Gikomero">Gikomero</option>
-                  <option value="Gisozi">Gisozi</option>
-                  <option value="Jabana">Jabana</option>
-                  <option value="Jali">Jali</option>
-                  <option value="Kacyiru">Kacyiru</option>
-                  <option value="Kimihurura">Kimihurura</option>
-                  <option value="Kimironko">Kimironko</option>
-                  <option value="Kinyinya">Kinyinya</option>
-                  <option value="Ndera">Ndera</option>
-                  <option value="Nduba">Nduba</option>
-                  <option value="Remera">Remera</option>
-                  <option value="Rusororo">Rusororo</option>
-                  <option value="Rutunga">Rutunga</option>
-                  <option value="Gahanga">Gahanga</option>
-                  <option value="Gatenga">Gatenga</option>
-                  <option value="Gikondo">Gikondo</option>
-                  <option value="Kagarama">Kagarama</option>
-                  <option value="Kanombe">Kanombe</option>
-                  <option value="Kicukiro">Kicukiro</option>
-                  <option value="Kigarama">Kigarama</option>
-                  <option value="Masaka">Masaka</option>
-                  <option value="Niboye">Niboye</option>
-                  <option value="Nyarugunga">Nyarugunga</option>
-                  <option value="Gitega">Gitega</option>
-                  <option value="Kanyinya">Kanyinya</option>
-                  <option value="Kigali">Kigali</option>
-                  <option value="Kimisagara">Kimisagara</option>
-                  <option value="Mageragere">Mageragere</option>
-                  <option value="Muhima">Muhima</option>
-                  <option value="Nyakabanda">Nyakabanda</option>
-                  <option value="Nyamirambo">Nyamirambo</option>
-                  <option value="Nyarugenge">Nyarugenge</option>
-                  <option value="Rwezamenyo">Rwezamenyo</option>
-                </select>
-              </div>
-              <div class="flex justify-end space-x-2">
-                <button
-                  type="button"
-                  id="cancel-student"
-                  class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Add Student
-                </button>
-              </div>
-            </form>
-        </div>
-      </div>
-
-      <!-- Add Employee Modal -->
-      <div
-        id="employee-modal"
-        class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
-      >
-        <div class="bg-white rounded-lg p-6 w-96">
-          <h3 class="text-lg font-semibold mb-4">Add Employee</h3>
-          <form id="employee-form">
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Name</label>
-              <input
-                type="text"
-                id="employee-name"
-                name="employee-name"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Position</label>
-              <input
-                type="text"
-                id="employee-position"
-                name="employee-position"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Department</label>
-              <input
-                type="text"
-                id="employee-department"
-                name="employee-department"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="mb-4">
-              <label class="block text-sm font-medium mb-2">Salary</label>
-              <input
-                type="number"
-                id="employee-salary"
-                name="employee-salary"
-                class="w-full px-3 py-2 border rounded-lg"
-                required
-              />
-            </div>
-            <div class="flex justify-end space-x-2">
-              <button
-                type="button"
-                id="cancel-employee"
-                class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Add Employee
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-
-      <script src="{% static 'script.js' %}"></script>
-      <script src="{% static 'ui-interactions.js' %}"></script>
-      <script>
-        document.addEventListener("DOMContentLoaded", function () {
-          // View More button toggle
-          const viewMoreBtn = document.getElementById("view-more-btn");
-          if (viewMoreBtn) {
-            viewMoreBtn.addEventListener("click", function () {
-              const extraRows = document.querySelectorAll(".extra-row");
-              extraRows.forEach((row) => {
-                if (row.classList.contains("hidden")) {
-                  row.classList.remove("hidden");
-                  viewMoreBtn.textContent = "View Less";
-                } else {
-                  row.classList.add("hidden");
-                  viewMoreBtn.textContent = "View More";
-                  // Scroll to the table top when collapsing
-                  document.getElementById("students-table").scrollIntoView({ behavior: "smooth" });
-                }
-              });
-            });
-          }
-
-          // Add Student button opens modal
-          const addStudentBtn = document.getElementById("add-student-btn");
-          const studentModal = document.getElementById("student-modal");
-          const cancelStudentBtn = document.getElementById("cancel-student");
-
-          if (addStudentBtn && studentModal) {
-            addStudentBtn.addEventListener("click", function () {
-              studentModal.classList.remove("hidden");
-              studentModal.classList.add("flex");
-            });
-          }
-
-          if (cancelStudentBtn && studentModal) {
-            cancelStudentBtn.addEventListener("click", function () {
-              studentModal.classList.add("hidden");
-              studentModal.classList.remove("flex");
-            });
-          }
-        });
-      </script>
-      {% csrf_token %}
     </div>
+    <script src="{% static 'ui-interactions.js' %}"></script>
   </body>
 </html>
+{% endblock %}

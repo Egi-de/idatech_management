@@ -19,6 +19,11 @@ import openpyxl
 from django.core.mail import EmailMessage
 
 @login_required
+def add_employee_form(request):
+    if request.method == 'GET':
+        return render(request, 'admin_panel/add_employee.html')
+
+@login_required
 def dashboard(request):
     # Fetch counts and summaries for dashboard
     total_students = Student.objects.count()
@@ -131,6 +136,11 @@ def dashboard(request):
 def student_report_detail(request, student_id):
     student = get_object_or_404(Student, id=student_id)
     return render(request, 'admin_panel/student_report_detail.html', {'student': student})
+
+@login_required
+def employment_report_detail(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    return render(request, 'admin_panel/employment_report_detail.html', {'employee': employee})
 
 @login_required
 def export_student_report_pdf(request, student_id):
@@ -723,6 +733,202 @@ def search(request):
         'expenses': expenses,
     }
     return render(request, 'admin_panel/search_results.html', context)
+
+@login_required
+def export_employment_report_pdf(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    y = height - 50
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, y, f"Employee Report: {employee.name}")
+    y -= 30
+
+    p.setFont("Helvetica", 12)
+    p.drawString(50, y, f"Position: {employee.position}")
+    y -= 20
+    p.drawString(50, y, f"Department: {employee.department}")
+    y -= 20
+    p.drawString(50, y, f"Salary: {employee.salary}")
+    y -= 30
+
+    # Add more fields as needed...
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{employee.name}_report.pdf"'
+    return response
+
+@login_required
+def export_employment_report_excel(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Employee Report"
+
+    ws.append(["Field", "Value"])
+    ws.append(["Name", employee.name])
+    ws.append(["Position", employee.position])
+    ws.append(["Department", employee.department])
+    ws.append(["Salary", str(employee.salary)])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = f'attachment; filename="{employee.name}_report.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required
+def email_employment_report(request, employee_id):
+    employee = get_object_or_404(Employee, id=employee_id)
+    if request.method == 'POST':
+        recipient_email = request.POST.get('email')
+        if recipient_email:
+            subject = f"Employee Report: {employee.name}"
+            message = render_to_string('admin_panel/email_employment_report.html', {'employee': employee})
+            email = EmailMessage(subject, message, to=[recipient_email])
+            email.content_subtype = "html"
+            email.send()
+            return JsonResponse({'success': True, 'message': 'Email sent successfully'})
+        return JsonResponse({'success': False, 'message': 'Recipient email is required'})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@login_required
+def financial_report_detail(request):
+    total_salaries = Employee.objects.aggregate(Sum('salary'))['salary__sum'] or 0
+    transport_expenses = Expense.objects.filter(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
+    other_expenses = Expense.objects.filter(type=Expense.OTHER).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = total_salaries + transport_expenses + other_expenses
+    recent_transactions = Transaction.objects.order_by('-date')[:10]
+    context = {
+        'total_salaries': total_salaries,
+        'transport_expenses': transport_expenses,
+        'other_expenses': other_expenses,
+        'total_expenses': total_expenses,
+        'recent_transactions': recent_transactions,
+    }
+    return render(request, 'admin_panel/financial_report_detail.html', context)
+
+@login_required
+def export_financial_report_pdf(request):
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=letter)
+    width, height = letter
+
+    y = height - 50
+    p.setFont("Helvetica-Bold", 16)
+    p.drawString(50, y, "Financial Report")
+    y -= 30
+
+    p.setFont("Helvetica", 12)
+    total_salaries = Employee.objects.aggregate(Sum('salary'))['salary__sum'] or 0
+    transport_expenses = Expense.objects.filter(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
+    other_expenses = Expense.objects.filter(type=Expense.OTHER).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = total_salaries + transport_expenses + other_expenses
+    p.drawString(50, y, f"Total Salaries: ${total_salaries}")
+    y -= 20
+    p.drawString(50, y, f"Transport Expenses: ${transport_expenses}")
+    y -= 20
+    p.drawString(50, y, f"Other Expenses: ${other_expenses}")
+    y -= 20
+    p.drawString(50, y, f"Total Expenses: ${total_expenses}")
+    y -= 30
+
+    # Add more fields as needed...
+
+    p.showPage()
+    p.save()
+    buffer.seek(0)
+    response = HttpResponse(buffer, content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="financial_report.pdf"'
+    return response
+
+@login_required
+def export_financial_report_excel(request):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = "Financial Report"
+
+    ws.append(["Field", "Value"])
+    total_salaries = Employee.objects.aggregate(Sum('salary'))['salary__sum'] or 0
+    transport_expenses = Expense.objects.filter(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
+    other_expenses = Expense.objects.filter(type=Expense.OTHER).aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expenses = total_salaries + transport_expenses + other_expenses
+    ws.append(["Total Salaries", str(total_salaries)])
+    ws.append(["Transport Expenses", str(transport_expenses)])
+    ws.append(["Other Expenses", str(other_expenses)])
+    ws.append(["Total Expenses", str(total_expenses)])
+
+    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    response['Content-Disposition'] = 'attachment; filename="financial_report.xlsx"'
+    wb.save(response)
+    return response
+
+@login_required
+def email_financial_report(request):
+    if request.method == 'POST':
+        recipient_email = request.POST.get('email')
+        if recipient_email:
+            subject = "Financial Report"
+            total_salaries = Employee.objects.aggregate(Sum('salary'))['salary__sum'] or 0
+            transport_expenses = Expense.objects.filter(type=Expense.TRANSPORT).aggregate(Sum('amount'))['amount__sum'] or 0
+            other_expenses = Expense.objects.filter(type=Expense.OTHER).aggregate(Sum('amount'))['amount__sum'] or 0
+            total_expenses = total_salaries + transport_expenses + other_expenses
+            context = {
+                'total_salaries': total_salaries,
+                'transport_expenses': transport_expenses,
+                'other_expenses': other_expenses,
+                'total_expenses': total_expenses,
+            }
+            message = render_to_string('admin_panel/email_financial_report.html', context)
+            email = EmailMessage(subject, message, to=[recipient_email])
+            email.content_subtype = "html"
+            email.send()
+            return JsonResponse({'success': True, 'message': 'Email sent successfully'})
+        return JsonResponse({'success': False, 'message': 'Recipient email is required'})
+    return JsonResponse({'success': False, 'message': 'Invalid request method'})
+
+@csrf_exempt
+@require_POST
+@login_required
+def bulk_delete_employees(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        try:
+            data = json.loads(request.body)
+            employee_ids = data.get('employee_ids', [])
+            if not employee_ids:
+                return JsonResponse({'success': False, 'error': 'No employee IDs provided'})
+
+            employees = Employee.objects.filter(id__in=employee_ids)
+            deleted_count = 0
+            for employee in employees:
+                # Save to TrashBinEntry before deleting
+                TrashBinEntry.objects.create(
+                    user=request.user,
+                    item_type='Employee',
+                    item_id=employee.id,
+                    item_data=json.loads(serialize('json', [employee]))[0]['fields'],
+                    deleted_at=timezone.now()
+                )
+                deleted_count += 1
+
+            # Bulk delete
+            employees.delete()
+
+            # Create recent activity
+            RecentActivity.objects.create(
+                user=request.user,
+                action=f"Bulk deleted {deleted_count} employees",
+                icon_class="fas fa-trash text-red-500"
+            )
+
+            return JsonResponse({'success': True, 'deleted_count': deleted_count})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
 def trash_bin(request):

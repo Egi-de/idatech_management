@@ -1,34 +1,36 @@
-# IDA Tech Management - Bulk Delete Students Implementation
+# TODO for Enhancing Employees Section in Admin Panel
 
-## Task: Implement Bulk Delete Functionality for Students
+## Step 1: Update Template ✅
 
-### Completed Tasks:
-- [x] Updated `templates/admin_panel/index.html` to add select button, checkboxes, and delete selected button in students table
-- [x] Updated `static/ui-interactions.js` to handle select button toggle, checkbox selection, and bulk delete functionality
-- [x] Verified `admin_panel/views.py` already has bulk_delete_students view implemented
-- [x] Verified `admin_panel/urls.py` already has bulk_delete_students URL configured
-- [x] Added reports section with buttons for different report types (students, employees, expenses, transactions)
+- Update employees section in `templates/admin_panel/index.html` to display additional fields:
+  - employee ID, email, phone, hire date, status, profile photo
+- Add color-coded status indicators and department color coding using model properties
 
-### Features Implemented:
-- Select button toggles visibility of checkboxes in students table
-- Individual student checkboxes can be selected/deselected
-- Select All checkbox selects/deselects all visible student checkboxes
-- Delete Selected button appears when selection mode is active and students are selected
-- Bulk delete sends selected student IDs to backend via AJAX
-- Backend processes bulk delete and saves deleted items to trash bin
-- Recent activity is created for bulk delete operations
-- Reports section with buttons to switch between different report views
+## Step 2: Update Views ✅
 
-### Technical Details:
-- Uses JavaScript to toggle checkbox visibility and handle selection logic
-- AJAX request sends JSON payload with student IDs to bulk delete endpoint
-- Backend uses Django's bulk delete and saves to TrashBinEntry before deletion
-- CSRF token handling for secure AJAX requests
-- Error handling and user confirmation for delete operations
+- Modify `admin_panel/views.py` dashboard view to support filtering and sorting parameters for employees
+- Implement filtering by department, position, status, hire date range, salary range
+- Implement sorting by any column (name, position, department, salary, hire date)
 
-### Next Steps:
-- Test the functionality by running the Django server
-- Verify that the select button toggles checkbox visibility
-- Test selecting individual students and using select all functionality
-- Test bulk delete operation and confirm students are moved to trash bin
-- Test reports section button functionality
+## Step 3: Update JavaScript
+
+- Enhance `static/ui-interactions.js` to add:
+  - Real-time search with autocomplete for employees
+  - Filtering and sorting UI interactions for employees section
+  - Bulk operations (bulk edit, bulk delete, export)
+  - Pagination for large employee lists
+  - Loading states and error handling
+
+## Step 4: Responsive Design
+
+- Make employees section responsive for mobile devices using Tailwind CSS
+
+## Step 5: Testing
+
+- Test all new features for correctness and performance
+- Verify AJAX calls and UI interactions
+- Ensure responsive design works well on different screen sizes
+
+---
+
+Progress will be tracked here as steps are completed.

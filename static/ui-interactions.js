@@ -107,16 +107,110 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Show the correct section based on URL param
+  const sections = document.querySelectorAll(".section");
+  sections.forEach((sec) => sec.classList.add("hidden"));
+  const targetSection = currentSection || "overview";
+  const target = document.getElementById(targetSection);
+  if (target) target.classList.remove("hidden");
+
   // Filter buttons active state toggle for student management section
   const filterButtons = document.querySelectorAll(".filter-btn");
+  const studentsTableBody = document.getElementById("students-table");
+
+  // Add Employee button click handler
+  const addEmployeeBtn = document.getElementById("add-employee-btn");
+  if (addEmployeeBtn) {
+    addEmployeeBtn.addEventListener("click", () => {
+      // Redirect to the add employee page
+      window.location.href = "/admin_panel/add-employee-form/";
+    });
+  }
+
+  // Map plural filter values to singular backend filter keys
+  const filterMap = {
+    trainees: "trainee",
+    internes: "internee",
+    internees: "internee",
+    iot: "iot",
+    sod: "sod",
+  };
+
   filterButtons.forEach((button) => {
     button.addEventListener("click", () => {
+      console.log("Filter button clicked:", button.getAttribute("data-filter"));
       filterButtons.forEach((btn) => {
         btn.classList.remove("bg-blue-500", "text-white");
         btn.classList.add("bg-gray-200", "text-gray-700");
       });
       button.classList.add("bg-blue-500", "text-white");
       button.classList.remove("bg-gray-200", "text-gray-700");
+
+      let filterType = button.getAttribute("data-filter");
+      console.log("Original filterType:", filterType);
+
+      if (filterType === "all") {
+        // Reload the page or fetch all students
+        window.location.href = window.location.pathname;
+        return;
+      }
+
+      // Map plural to singular filter key
+      filterType = filterMap[filterType] || filterType;
+      console.log("Mapped filterType:", filterType);
+
+      // Fetch filtered students via AJAX
+      fetch(`/fetch-tab-data/${filterType}/`, {
+        headers: {
+          "X-Requested-With": "XMLHttpRequest",
+        },
+      })
+        .then((response) => {
+          console.log("Fetch response status:", response.status);
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Data received:", data);
+          // Clear current table rows
+          studentsTableBody.innerHTML = "";
+
+          if (data.data.length === 0) {
+            const noDataRow = document.createElement("tr");
+            noDataRow.innerHTML = `<td colspan="7" class="text-center py-4">No students found.</td>`;
+            studentsTableBody.appendChild(noDataRow);
+            return;
+          }
+
+          // Populate table with filtered students
+          data.data.forEach((student) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-6 py-4 whitespace-nowrap">${student.name}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${student.type}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${student.address}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${student.program}</td>
+              <td class="px-6 py-4 whitespace-nowrap">${student.level}</td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <a href="/admin_panel/update_student/${
+                  student.id
+                }/" class="text-indigo-600 hover:text-indigo-900 mr-2">Edit</a>
+                <form action="/admin_panel/delete_student/${
+                  student.id
+                }/" method="post" class="inline">
+                  <input type="hidden" name="csrfmiddlewaretoken" value="${getCookie(
+                    "csrftoken"
+                  )}">
+                  <button type="submit" class="text-red-600 hover:text-red-900" onclick="return confirm('Are you sure you want to delete this student?');">Delete</button>
+                </form>
+                <button type="button" class="select-btn text-blue-600 hover:text-blue-900 ml-2">Select</button>
+              </td>
+            `;
+            studentsTableBody.appendChild(row);
+          });
+        })
+        .catch((error) => {
+          console.error("Error fetching filtered students:", error);
+        });
     });
   });
 
@@ -183,7 +277,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Select button toggle checkboxes and delete selected button
   const selectButtons = document.querySelectorAll(".select-btn");
-  const deleteSelectedBtn = document.getElementById("delete-selected-students-btn");
+  const deleteSelectedBtn = document.getElementById(
+    "delete-selected-students-btn"
+  );
   const selectAllCheckbox = document.getElementById("select-all-students");
   const studentCheckboxes = document.querySelectorAll(".student-checkbox");
   const checkboxCells = document.querySelectorAll(".checkbox-cell");
@@ -191,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let selectionMode = false;
 
   function updateDeleteButtonState() {
-    const anyChecked = Array.from(studentCheckboxes).some(cb => cb.checked);
+    const anyChecked = Array.from(studentCheckboxes).some((cb) => cb.checked);
     if (deleteSelectedBtn) {
       deleteSelectedBtn.disabled = !anyChecked;
       if (anyChecked) {
@@ -202,10 +298,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  selectButtons.forEach(button => {
+  selectButtons.forEach((button) => {
     button.addEventListener("click", () => {
       selectionMode = !selectionMode;
-      checkboxCells.forEach(cell => {
+      checkboxCells.forEach((cell) => {
         if (selectionMode) {
           cell.classList.remove("hidden");
         } else {
@@ -217,7 +313,7 @@ document.addEventListener("DOMContentLoaded", function () {
         deleteSelectedBtn.disabled = !selectionMode;
       }
       if (!selectionMode) {
-        studentCheckboxes.forEach(cb => cb.checked = false);
+        studentCheckboxes.forEach((cb) => (cb.checked = false));
         if (selectAllCheckbox) selectAllCheckbox.checked = false;
       }
       updateDeleteButtonState();
@@ -227,15 +323,17 @@ document.addEventListener("DOMContentLoaded", function () {
   if (selectAllCheckbox) {
     selectAllCheckbox.addEventListener("change", () => {
       const checked = selectAllCheckbox.checked;
-      studentCheckboxes.forEach(cb => cb.checked = checked);
+      studentCheckboxes.forEach((cb) => (cb.checked = checked));
       updateDeleteButtonState();
     });
   }
 
-  studentCheckboxes.forEach(cb => {
+  studentCheckboxes.forEach((cb) => {
     cb.addEventListener("change", () => {
       if (selectAllCheckbox) {
-        const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
+        const allChecked = Array.from(studentCheckboxes).every(
+          (cb) => cb.checked
+        );
         selectAllCheckbox.checked = allChecked;
       }
       updateDeleteButtonState();
@@ -245,15 +343,19 @@ document.addEventListener("DOMContentLoaded", function () {
   if (deleteSelectedBtn) {
     deleteSelectedBtn.addEventListener("click", function () {
       const selectedIds = Array.from(studentCheckboxes)
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.value);
 
       if (selectedIds.length === 0) {
         alert("Please select at least one student to delete.");
         return;
       }
 
-      if (!confirm(`Are you sure you want to delete ${selectedIds.length} selected student(s)?`)) {
+      if (
+        !confirm(
+          `Are you sure you want to delete ${selectedIds.length} selected student(s)?`
+        )
+      ) {
         return;
       }
 
@@ -262,25 +364,28 @@ document.addEventListener("DOMContentLoaded", function () {
         headers: {
           "Content-Type": "application/json",
           "X-CSRFToken": getCookie("csrftoken"),
-          "X-Requested-With": "XMLHttpRequest"
+          "X-Requested-With": "XMLHttpRequest",
         },
         body: JSON.stringify({ student_ids: selectedIds }),
       })
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error("Network response was not ok");
           }
           return response.json();
         })
-        .then(data => {
+        .then((data) => {
           if (data.success) {
             // Reload page or remove deleted rows from DOM
             location.reload();
           } else {
-            alert("Failed to delete selected students: " + (data.error || "Unknown error"));
+            alert(
+              "Failed to delete selected students: " +
+                (data.error || "Unknown error")
+            );
           }
         })
-        .catch(error => {
+        .catch((error) => {
           alert("Error deleting students: " + error.message);
         });
     });
@@ -294,12 +399,364 @@ document.addEventListener("DOMContentLoaded", function () {
       for (let i = 0; i < cookies.length; i++) {
         const cookie = cookies[i].trim();
         // Does this cookie string begin with the name we want?
-        if (cookie.substring(0, name.length + 1) === (name + "=")) {
+        if (cookie.substring(0, name.length + 1) === name + "=") {
           cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
           break;
         }
       }
     }
     return cookieValue;
+  }
+
+  // Employee Section Enhancements
+
+  // Real-time search with autocomplete for employees
+  const employeeSearchInput = document.getElementById("employee-search");
+  const employeeSearchResults = document.getElementById(
+    "employee-search-results"
+  );
+  let searchTimeout;
+
+  if (employeeSearchInput && employeeSearchResults) {
+    employeeSearchInput.addEventListener("input", function () {
+      clearTimeout(searchTimeout);
+      const query = this.value.trim();
+
+      if (query.length < 2) {
+        employeeSearchResults.classList.add("hidden");
+        return;
+      }
+
+      searchTimeout = setTimeout(() => {
+        fetch(
+          `/admin_panel/search/?q=${encodeURIComponent(query)}&type=employee`,
+          {
+            headers: {
+              "X-Requested-With": "XMLHttpRequest",
+            },
+          }
+        )
+          .then((response) => response.json())
+          .then((data) => {
+            employeeSearchResults.innerHTML = "";
+            if (data.employees && data.employees.length > 0) {
+              data.employees.forEach((employee) => {
+                const resultItem = document.createElement("div");
+                resultItem.className = "p-2 hover:bg-gray-100 cursor-pointer";
+                resultItem.textContent = `${employee.first_name} ${employee.last_name} - ${employee.position}`;
+                resultItem.addEventListener("click", () => {
+                  employeeSearchInput.value = `${employee.first_name} ${employee.last_name}`;
+                  employeeSearchResults.classList.add("hidden");
+                  // Optionally, filter the employee list to show only this employee
+                  filterEmployees({
+                    search: employee.first_name + " " + employee.last_name,
+                  });
+                });
+                employeeSearchResults.appendChild(resultItem);
+              });
+              employeeSearchResults.classList.remove("hidden");
+            } else {
+              employeeSearchResults.classList.add("hidden");
+            }
+          })
+          .catch((error) => {
+            console.error("Error searching employees:", error);
+            employeeSearchResults.classList.add("hidden");
+          });
+      }, 300);
+    });
+
+    // Hide search results when clicking outside
+    document.addEventListener("click", (e) => {
+      if (
+        !employeeSearchInput.contains(e.target) &&
+        !employeeSearchResults.contains(e.target)
+      ) {
+        employeeSearchResults.classList.add("hidden");
+      }
+    });
+  }
+
+  // Employee filtering and sorting
+  const employeeDepartmentFilter = document.getElementById(
+    "employee-department-filter"
+  );
+  const employeeStatusFilter = document.getElementById(
+    "employee-status-filter"
+  );
+  const employeeSortSelect = document.getElementById("employee-sort");
+  const employeeTableBody = document.getElementById("employees-table");
+  const employeeLoadingSpinner = document.getElementById("employees-loading");
+
+  function filterEmployees(params = {}) {
+    const department =
+      params.department ||
+      (employeeDepartmentFilter ? employeeDepartmentFilter.value : "");
+    const status =
+      params.status || (employeeStatusFilter ? employeeStatusFilter.value : "");
+    const sort =
+      params.sort ||
+      (employeeSortSelect ? employeeSortSelect.value : "name_asc");
+    const search =
+      params.search || (employeeSearchInput ? employeeSearchInput.value : "");
+
+    // Show loading spinner
+    if (employeeLoadingSpinner)
+      employeeLoadingSpinner.classList.remove("hidden");
+    if (employeeTableBody) employeeTableBody.classList.add("opacity-50");
+
+    const queryParams = new URLSearchParams({
+      employee_department: department,
+      employee_status: status,
+      employee_sort: sort,
+      employee_search: search,
+    });
+
+    fetch(`/admin_panel/dashboard/?${queryParams}`, {
+      headers: {
+        "X-Requested-With": "XMLHttpRequest",
+      },
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        // Update employee table with filtered results
+        if (employeeTableBody && data.employees_html) {
+          employeeTableBody.innerHTML = data.employees_html;
+        }
+        // Hide loading spinner
+        if (employeeLoadingSpinner)
+          employeeLoadingSpinner.classList.add("hidden");
+        if (employeeTableBody) employeeTableBody.classList.remove("opacity-50");
+      })
+      .catch((error) => {
+        console.error("Error filtering employees:", error);
+        if (employeeLoadingSpinner)
+          employeeLoadingSpinner.classList.add("hidden");
+        if (employeeTableBody) employeeTableBody.classList.remove("opacity-50");
+        showErrorMessage("Failed to filter employees. Please try again.");
+      });
+  }
+
+  // Event listeners for filters
+  if (employeeDepartmentFilter) {
+    employeeDepartmentFilter.addEventListener("change", () =>
+      filterEmployees()
+    );
+  }
+  if (employeeStatusFilter) {
+    employeeStatusFilter.addEventListener("change", () => filterEmployees());
+  }
+  if (employeeSortSelect) {
+    employeeSortSelect.addEventListener("change", () => filterEmployees());
+  }
+
+  // Employee bulk operations
+  const employeeSelectAllCheckbox = document.getElementById(
+    "select-all-employees-checkbox"
+  );
+  const employeeCheckboxes = document.querySelectorAll(".employee-checkbox");
+  const employeeBulkDeleteBtn = document.getElementById(
+    "bulk-delete-employees"
+  );
+  const employeeBulkEditBtn = document.getElementById("bulk-edit-employees");
+  const employeeExportBtn = document.getElementById("export-employees");
+
+  function updateEmployeeBulkButtons() {
+    const checkedBoxes = document.querySelectorAll(
+      ".employee-checkbox:checked"
+    );
+    const hasSelection = checkedBoxes.length > 0;
+
+    if (employeeBulkDeleteBtn) {
+      employeeBulkDeleteBtn.disabled = !hasSelection;
+      employeeBulkDeleteBtn.classList.toggle("opacity-50", !hasSelection);
+    }
+    if (employeeBulkEditBtn) {
+      employeeBulkEditBtn.disabled = !hasSelection;
+      employeeBulkEditBtn.classList.toggle("opacity-50", !hasSelection);
+    }
+  }
+
+  if (employeeSelectAllCheckbox) {
+    employeeSelectAllCheckbox.addEventListener("change", function () {
+      const isChecked = this.checked;
+      employeeCheckboxes.forEach((cb) => (cb.checked = isChecked));
+      updateEmployeeBulkButtons();
+    });
+  }
+
+  employeeCheckboxes.forEach((cb) => {
+    cb.addEventListener("change", function () {
+      const allChecked = Array.from(employeeCheckboxes).every(
+        (cb) => cb.checked
+      );
+      const noneChecked = Array.from(employeeCheckboxes).every(
+        (cb) => !cb.checked
+      );
+
+      if (employeeSelectAllCheckbox) {
+        employeeSelectAllCheckbox.checked = allChecked;
+        employeeSelectAllCheckbox.indeterminate = !allChecked && !noneChecked;
+      }
+      updateEmployeeBulkButtons();
+    });
+  });
+
+  // Bulk delete employees
+  if (employeeBulkDeleteBtn) {
+    employeeBulkDeleteBtn.addEventListener("click", function () {
+      const selectedIds = Array.from(employeeCheckboxes)
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.value);
+
+      if (selectedIds.length === 0) {
+        showErrorMessage("Please select employees to delete.");
+        return;
+      }
+
+      if (
+        !confirm(
+          `Are you sure you want to delete ${selectedIds.length} employee(s)?`
+        )
+      ) {
+        return;
+      }
+
+      // Show loading state
+      this.disabled = true;
+      this.textContent = "Deleting...";
+
+      fetch("/bulk-delete-employees/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken"),
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        body: JSON.stringify({ employee_ids: selectedIds }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.success) {
+            location.reload(); // Refresh to show updated list
+          } else {
+            showErrorMessage(data.error || "Failed to delete employees.");
+          }
+        })
+        .catch((error) => {
+          console.error("Error deleting employees:", error);
+          showErrorMessage("Failed to delete employees. Please try again.");
+        })
+        .finally(() => {
+          this.disabled = false;
+          this.textContent = "Delete Selected";
+        });
+    });
+  }
+
+  // Bulk edit employees (placeholder for future implementation)
+  if (employeeBulkEditBtn) {
+    employeeBulkEditBtn.addEventListener("click", function () {
+      const selectedIds = Array.from(employeeCheckboxes)
+        .filter((cb) => cb.checked)
+        .map((cb) => cb.value);
+
+      if (selectedIds.length === 0) {
+        showErrorMessage("Please select employees to edit.");
+        return;
+      }
+
+      // For now, just show an alert. In a full implementation, this would open a bulk edit modal
+      alert("Bulk edit functionality will be implemented in the next update.");
+    });
+  }
+
+  // Export employees
+  if (employeeExportBtn) {
+    employeeExportBtn.addEventListener("click", function () {
+      const department = employeeDepartmentFilter
+        ? employeeDepartmentFilter.value
+        : "";
+      const status = employeeStatusFilter ? employeeStatusFilter.value : "";
+      const sort = employeeSortSelect ? employeeSortSelect.value : "name_asc";
+      const search = employeeSearchInput ? employeeSearchInput.value : "";
+
+      const queryParams = new URLSearchParams({
+        employee_department: department,
+        employee_status: status,
+        employee_sort: sort,
+        employee_search: search,
+        export: "true",
+      });
+
+      window.open(`/admin_panel/dashboard/?${queryParams}`, "_blank");
+    });
+  }
+
+  // Employee pagination
+  const employeePagination = document.getElementById("employee-pagination");
+  const employeePrevBtn = document.getElementById("employee-prev-btn");
+  const employeeNextBtn = document.getElementById("employee-next-btn");
+  const employeePageInfo = document.getElementById("employee-page-info");
+
+  let currentEmployeePage = 1;
+  const employeesPerPage = 10;
+
+  function updateEmployeePagination(totalEmployees) {
+    if (!employeePagination) return;
+
+    const totalPages = Math.ceil(totalEmployees / employeesPerPage);
+
+    if (employeePrevBtn) {
+      employeePrevBtn.disabled = currentEmployeePage === 1;
+    }
+    if (employeeNextBtn) {
+      employeeNextBtn.disabled = currentEmployeePage === totalPages;
+    }
+    if (employeePageInfo) {
+      employeePageInfo.textContent = `Page ${currentEmployeePage} of ${totalPages}`;
+    }
+  }
+
+  if (employeePrevBtn) {
+    employeePrevBtn.addEventListener("click", () => {
+      if (currentEmployeePage > 1) {
+        currentEmployeePage--;
+        filterEmployees({ page: currentEmployeePage });
+      }
+    });
+  }
+
+  if (employeeNextBtn) {
+    employeeNextBtn.addEventListener("click", () => {
+      currentEmployeePage++;
+      filterEmployees({ page: currentEmployeePage });
+    });
+  }
+
+  // Error message display function
+  function showErrorMessage(message) {
+    const errorDiv = document.createElement("div");
+    errorDiv.className =
+      "fixed top-4 right-4 bg-red-500 text-white px-4 py-2 rounded shadow-lg z-50";
+    errorDiv.textContent = message;
+    document.body.appendChild(errorDiv);
+
+    setTimeout(() => {
+      errorDiv.remove();
+    }, 5000);
+  }
+
+  // Success message display function
+  function showSuccessMessage(message) {
+    const successDiv = document.createElement("div");
+    successDiv.className =
+      "fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded shadow-lg z-50";
+    successDiv.textContent = message;
+    document.body.appendChild(successDiv);
+
+    setTimeout(() => {
+      successDiv.remove();
+    }, 5000);
   }
 });

@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Financial Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="{% static 'styles.css' %}" />
+  </head>
+  <body class="bg-gray-50 min-h-screen font-sans">
+    <div class="max-w-5xl mx-auto p-6">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <div
+          class="flex flex-col md:flex-row justify-between items-center mb-8 space-y-4 md:space-y-0"
+        >
+          <h1 class="text-4xl font-extrabold text-gray-900">
+            Financial Report
+          </h1>
+          <div class="flex space-x-4">
+            <a
+              href="{% url 'admin_panel:export_financial_report_pdf' %}"
+              class="flex items-center bg-red-600 text-white px-5 py-3 rounded-lg shadow hover:bg-red-700 transition"
+            >
+              <i class="fas fa-file-pdf mr-3 text-lg"></i> PDF
+            </a>
+            <a
+              href="{% url 'admin_panel:export_financial_report_excel' %}"
+              class="flex items-center bg-green-600 text-white px-5 py-3 rounded-lg shadow hover:bg-green-700 transition"
+            >
+              <i class="fas fa-file-excel mr-3 text-lg"></i> Excel
+            </a>
+            <button
+              onclick="openEmailModal()"
+              class="flex items-center bg-blue-600 text-white px-5 py-3 rounded-lg shadow hover:bg-blue-700 transition focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <i class="fas fa-envelope mr-3 text-lg"></i> Email
+            </button>
+          </div>
+        </div>
+
+        <!-- Financial Summary -->
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4 text-blue-600">
+            Financial Summary
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p><strong>Total Salaries:</strong> ${{ total_salaries }}</p>
+              <p>
+                <strong>Transport Expenses:</strong> ${{ transport_expenses }}
+              </p>
+              <p><strong>Other Expenses:</strong> ${{ other_expenses }}</p>
+              <p><strong>Total Expenses:</strong> ${{ total_expenses }}</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Recent Transactions -->
+        <section class="mb-8">
+          <h2 class="text-2xl font-semibold mb-4 text-blue-600">
+            Recent Transactions
+          </h2>
+          <div class="overflow-x-auto">
+            <table class="min-w-full bg-white border border-gray-300">
+              <thead>
+                <tr class="bg-gray-100">
+                  <th class="py-2 px-4 border-b">Date</th>
+                  <th class="py-2 px-4 border-b">Type</th>
+                  <th class="py-2 px-4 border-b">Description</th>
+                  <th class="py-2 px-4 border-b">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for transaction in recent_transactions %}
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2 px-4 border-b">
+                    {{ transaction.date|date:"M d, Y" }}
+                  </td>
+                  <td class="py-2 px-4 border-b">
+                    {{ transaction.get_type_display }}
+                  </td>
+                  <td class="py-2 px-4 border-b">
+                    {{ transaction.description }}
+                  </td>
+                  <td class="py-2 px-4 border-b">${{ transaction.amount }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Back Button -->
+        <div class="mt-8">
+          <a
+            href="{% url 'admin_panel:dashboard' %}?section=reports"
+            class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          >
+            <i class="fas fa-arrow-left mr-2"></i>Back to Reports
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Modal -->
+    <div
+      id="emailModal"
+      class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center"
+    >
+      <div class="bg-white rounded-lg p-6 w-96">
+        <h3 class="text-lg font-semibold mb-4">Email Financial Report</h3>
+        <form id="emailForm">
+          {% csrf_token %}
+          <div class="mb-4">
+            <label class="block text-sm font-medium mb-2"
+              >Recipient Email</label
+            >
+            <input
+              type="email"
+              id="recipientEmail"
+              name="email"
+              class="w-full px-3 py-2 border rounded-lg"
+              required
+            />
+          </div>
+          <div class="flex justify-end space-x-2">
+            <button
+              type="button"
+              onclick="closeEmailModal()"
+              class="px-4 py-2 text-gray-600 border rounded hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              Send
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      function openEmailModal() {
+        document.getElementById("emailModal").classList.remove("hidden");
+        document.getElementById("emailModal").classList.add("flex");
+      }
+
+      function closeEmailModal() {
+        document.getElementById("emailModal").classList.add("hidden");
+        document.getElementById("emailModal").classList.remove("flex");
+      }
+
+      document
+        .getElementById("emailForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const email = document.getElementById("recipientEmail").value;
+          fetch("/admin_panel/email-financial-report/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/x-www-form-urlencoded",
+              "X-CSRFToken": document.querySelector(
+                "[name=csrfmiddlewaretoken]"
+              ).value,
+            },
+            body: "email=" + encodeURIComponent(email),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                alert("Email sent successfully!");
+                closeEmailModal();
+              } else {
+                alert("Error: " + data.message);
+              }
+            });
+        });
+    </script>
+  </body>
+</html>
